@@ -1,0 +1,11 @@
+** DONE **
+-RBAC has been achieved
+-the database has been set up
+-form for logging in is done
+-user CRUD functions are up 
+-form for registering people is up and running
+
+** TO DO **
+- Interfaces for each kind of user
+- tables in the database for orders, menuItems
+- default landing page for unregistered users
