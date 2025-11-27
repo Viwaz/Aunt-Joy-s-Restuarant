@@ -2,20 +2,20 @@
 
 class Meal {
     private $conn;
-    private $table = "meals";
+    
 
     public function __construct($db) {
         $this->conn = $db;
     }
 
     public function readAll() {
-        $query = "SELECT * FROM meals ORDER BY id DESC";
+        $query = "SELECT * FROM menu_items ORDER BY id DESC";
         $fetch = $this->conn->query($query);
         return $fetch;
     }
 
     public function read($id) {
-        $query = "SELECT * FROM meals WHERE id = ? LIMIT 1";
+        $query = "SELECT * FROM menu_items WHERE id = ? LIMIT 1";
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param("i", $id);
         $stmt->execute();
@@ -24,7 +24,7 @@ class Meal {
     }
 
     public function create($name, $description, $price, $category, $image) {
-        $query = "INSERT INTO meals(name, description, price_MWK, category, image)
+        $query = "INSERT INTO menu_items(name, description, price_MWK, category, image)
                   VALUES (?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param("ssdss", $name, $description, $price, $category, $image);
@@ -34,9 +34,9 @@ class Meal {
 
     public function update($id, $name, $description, $price, $category, $image=null) {
         if ($image) {
-            $query = "UPDATE meals SET name=?, description=?, price_MWK=?, category=?, image=? WHERE id=?";
+            $query = "UPDATE menu_items SET name=?, description=?, price_MWK=?, category=?, image=? WHERE id=?";
         } else {
-            $query = "UPDATE meals SET name=?, description=?, price_MWK=?, category=? WHERE id=?";
+            $query = "UPDATE menu_items SET name=?, description=?, price_MWK=?, category=? WHERE id=?";
         }
 
         $stmt = $this->conn->prepare($query);
@@ -46,8 +46,20 @@ class Meal {
         return $stmt->execute();
     }
 
+    public function toggleAvailability($id, $is_available) {
+        if ($is_available == 'in_stock') {
+            $is_available = 'out_of_stock';
+        } else {
+            $is_available = 'in_stock';
+        }
+        $query = "UPDATE menu_items SET availability=? WHERE id=?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("si", $is_available, $id);
+        return $stmt->execute();
+    }
+
     public function delete($id) {
-        $query = "DELETE FROM meals WHERE id = ?";
+        $query = "DELETE FROM menu_items WHERE id = ?";
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param("i", $id);
         return $stmt->execute();

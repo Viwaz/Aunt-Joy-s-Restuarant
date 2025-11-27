@@ -9,7 +9,8 @@
 
 ** TO DO **
 - (admin) - add an edit button for updating meals
-- (admin) -
+- (admin) - add a delete function for users
+- (admin) - create the toggle function for updating status
 - Interfaces for each kind of user
 - tables in the database for orders,
 - default landing page for unregistered users

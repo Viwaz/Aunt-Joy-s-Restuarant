@@ -25,9 +25,6 @@ $mealObj = new Meal($db);
 
 $message = "";
 
-// printing out the session variables
-
-
 // --- Handle Form Submissions ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
@@ -101,6 +98,13 @@ $username = $stmt->get_result()->fetch_object()->username;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html { font-size:25px; }
+    /* .px { font-size: 20px; }
+    .em { font-size: 1.5em; }
+    .rem { font-size: 1.25rem; }
+    .vw { font-size: 4vw; } */
+  </style>
     <title>Admin Dashboard - Aunt Joy's</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -112,9 +116,9 @@ $username = $stmt->get_result()->fetch_object()->username;
         <a href="dashboard.php" class = "logo"><h2>Aunt Joy's Restuarant</h2></a>
         <ul>
             <li><a href="#overview" class="active" onclick="showSection('overview-section')">📊 Overview</a></li>
-            <li><a href="#meals-section" onclick="showSection('meals-section')">🍔 Manage Meals</a></li>
-            <li><a href="#users-section" onclick="showSection('users-section')">👥 Manage Users</a></li>
-            <li><a href="../auth/logout.php" class="logout">Logout</a></li>
+            <li><a href="#meals-section" onclick="showSection('meals-section')">🍔 Meals</a></li>
+            <li><a href="#users-section" onclick="showSection('users-section')">👥 Users</a></li>
+            <li><a href="../auth/logout.php" class="logout" position = 'bottom'>Logout</a></li>
         </ul>
     </div>
 
@@ -197,6 +201,7 @@ $username = $stmt->get_result()->fetch_object()->username;
                                     <input type="hidden" name="delete_meal_id" value="<?= $row['id']; ?>">
                                     <button class="btn-sm btn-delete">Delete</button>
                                 </form>
+                                <button class="btn-sm btn-edit" onclick="openModal('editMealModal')">Edit</button>
                             </td>
                         </tr>
                         <?php }?>
@@ -223,6 +228,7 @@ $username = $stmt->get_result()->fetch_object()->username;
                             <th>Email</th>
                             <th>Role</th>
                             <th>Joined Date</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     
@@ -237,8 +243,12 @@ $username = $stmt->get_result()->fetch_object()->username;
                                 </span>
                             </td>
                             <td><?= $u['created_at']; ?></td>
+                            <td>
+                                <button class="btn-sm btn-delete" disabled>Delete</button>
+                                <button class="btn-sm btn-edit" disabled>Edit</button>
+                            </td>
+                            <?php endwhile; ?>
                         </tr>
-                        <?php endwhile; ?>
                     </tbody>
                 </table>
             </div>
@@ -318,6 +328,16 @@ $username = $stmt->get_result()->fetch_object()->username;
         </form>
     </div>
 </div>
+
+<!-- Edit Meal Modal -->
+ <div id="editMealModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('editMealModal')">&times;</span>
+        <h2>Edit Meal (Coming Soon)</h2>
+        <p>This feature is under development.</p>
+    </div>
+
+ </div>
 <script>
 // Simple JS for tab switching
 function showSection(sectionId) {
