@@ -19,6 +19,7 @@
                 $this->port
             );
             $this->conn->set_charset("set names utf8");
+            
         } catch(mysqli_sql_exception $exception) {
             echo "Connection error: " . $exception->getMessage();
         }

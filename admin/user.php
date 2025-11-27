@@ -2,7 +2,7 @@
 <!-- CRUD OPERATIONS -->
 
 <?php
-require_once 'database.php';
+require_once '../auth/database.php';
 /**
  * User class handles all user-related operations
  * it interacts with the 'users' table in the database
@@ -41,7 +41,8 @@ class User{
          */
         $readAll = $this->conn->prepare("SELECT * FROM $this->table ORDER BY id DESC");
         $readAll->execute();
-        return $readAll;
+        $result = $readAll->get_result();
+        return $result ;
     }
 
     public function update($username,$email,$role,$id){

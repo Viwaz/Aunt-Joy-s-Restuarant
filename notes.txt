@@ -1,11 +1,18 @@
 ** DONE **
 -RBAC has been achieved
 -the database has been set up
+-table for users
 -form for logging in is done
 -user CRUD functions are up 
 -form for registering people is up and running
+-Admin Dashboard is up but still needs work
 
 ** TO DO **
+- (admin) - add an edit button for updating meals
+- (admin) -
 - Interfaces for each kind of user
-- tables in the database for orders, menuItems
+- tables in the database for orders,
 - default landing page for unregistered users
+
+**Observations**
+- so I was looking at some of the methods in the user class, such as create user, reading all/specific data and I realized it means that whenever we create a userObj it has access to all these functionalities, and for a general user (non technical member) it may be wasted resources as they will not use these,Does this mean we have to create a class for each kind of user??

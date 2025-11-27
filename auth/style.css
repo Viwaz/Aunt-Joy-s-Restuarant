@@ -1,0 +1,187 @@
+/*
+ * General Styles for Food Ordering System Forms
+ * Used for both login.php and register.php
+ */
+
+/* --- Body and Background --- */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* Specific background for the Login Page */
+body.login-page {
+    background-image: linear-gradient(135deg, #ffc87c 0%, #ff5e3a 100%); /* Warm, food-themed */
+}
+
+/* Specific background for the Register Page */
+body.register-page {
+    background-image: linear-gradient(135deg, #7cff93 0%, #3aefff 100%); /* Fresh, lighter theme */
+}
+
+/* --- Container Styling --- */
+.form-container {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+}
+
+.form-container h2 {
+    margin-bottom: 24px;
+    color: #333;
+    font-size: 28px;
+}
+
+/* --- Form Elements --- */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.input-group {
+    position: relative; /* For the password eye icon */
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+/* Focus Colors (Specific per page) */
+.login-page input:focus {
+    border-color: #ff5e3a; /* Login focus color */
+    outline: none;
+}
+
+.register-page input:focus {
+    border-color: #3aff87; /* Register focus color */
+    outline: none;
+}
+
+/* --- Buttons --- */
+button[type="submit"] {
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+/* Login Button Colors */
+.login-page button[type="submit"] {
+    background-color: #ff5e3a;
+}
+.login-page button[type="submit"]:hover {
+    background-color: #e54d2e;
+}
+
+/* Register Button Colors */
+.register-page button[type="submit"] {
+    background-color: #3aff87;
+}
+.register-page button[type="submit"]:hover {
+    background-color: #2ad170;
+}
+
+button[type="submit"]:active {
+    transform: scale(0.99);
+}
+
+/* Password Toggle Button */
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    font-size: 18px;
+}
+
+/* --- Links and Footer Area --- */
+.link-area {
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.link-area p {
+    margin: 0 0 8px 0;
+    color: #666;
+}
+
+.link-area a {
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+/* Login Link Color */
+.login-page .link-area a {
+    color: #ff5e3a;
+}
+.login-page .link-area a:hover {
+    color: #e54d2e;
+}
+
+/* Register Link Color */
+.register-page .link-area a {
+    color: #3aff87;
+}
+.register-page .link-area a:hover {
+    color: #2ad170;
+}
+
+
+/* --- Message/Error Styling --- */
+.message {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.success {
+    background-color: #e6ffed;
+    color: #1a7d3c;
+    border: 1px solid #1a7d3c;
+}
+
+.error {
+    background-color: #ffe6e6;
+    color: #d12e2e;
+    border: 1px solid #d12e2e;
+    animation: shake 0.5s; /* Shake animation for errors */
+}
+
+/* CSS Animation for Error */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-10px); }
+    40% { transform: translateX(10px); }
+    60% { transform: translateX(-10px); }
+    80% { transform: translateX(10px); }
+    100% { transform: translateX(0); }
+}

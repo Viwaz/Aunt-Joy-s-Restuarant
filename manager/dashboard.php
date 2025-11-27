@@ -1,5 +1,5 @@
 <?php
-require_once 'auth.php';
+require_once '../auth/auth.php';
 $auth = new Auth();
 
 if (!$auth->isLoggedIn() || !$auth->checkRole('manager')) {
