@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard - Reports</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Optional: Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+<div class="dashboard-container">
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>📊 Manager Panel</h2>
+        <ul>
+            <li><a href="dashboard.php" class="active"><i class="fas fa-chart-line"></i> Sales Reports</a></li>
+            <!-- Add more manager links here if needed -->
+            <li><a href="logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        
+        <header>
+            <div>
+                <h1>Sales Reporting</h1>
+                <p style="color: #777;">Review performance metrics and trends</p>
+            </div>
+            <div class="user-info">
+                <strong>Manager</strong> <i class="fas fa-user-circle fa-lg"></i>
+            </div>
+        </header>
+
+        <!-- Filter Form -->
+        <div class="section-container">
+            <h3 class="section-title">Generate Report</h3>
+            <form method="POST" action="dashboard.php" class="filter-form">
+                <div class="input-group">
+                    <label style="margin-right: 10px; font-weight:bold;">Filter By:</label>
+                    <select name="month" required>
+                        <?php for ($i = 1; $i <= 12; $i++): ?>
+                            <option value="<?= sprintf('%02d', $i) ?>" <?= $i == $month ? 'selected' : '' ?>>
+                                <?= date('F', mktime(0, 0, 0, $i, 1)) ?>
+                            </option>
+                        <?php endfor; ?>
+                    </select>
+                    
+                    <select name="year" required>
+                        <?php for ($i = 2020; $i <= date('Y'); $i++): ?>
+                            <option value="<?= $i ?>" <?= $i == $year ? 'selected' : '' ?>><?= $i ?></option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+                
+                <div class="button-group" style="margin-left: auto; display:flex; gap:10px;">
+                    <button type="submit" name="generate_report" class="btn-primary"><i class="fas fa-filter"></i> Generate View</button>
+                    <button type="submit" name="export_pdf" class="btn-pdf"><i class="fas fa-file-pdf"></i> PDF</button>
+                    <button type="submit" name="export_excel" class="btn-excel"><i class="fas fa-file-excel"></i> Excel</button>
+                </div>
+            </form>
+        </div>
+
+        <?php if (isset($report_data)): ?>
+            
+            <h3 class="section-title">Summary for <?= date('F Y', mktime(0, 0, 0, $month, 1, $year)) ?></h3>
+
+            <!-- Summary Cards -->
+            <div class="stats-grid">
+                <div class="stat-card card-blue">
+                    <h4>Total Orders</h4>
+                    <p><i class="fas fa-shopping-bag" style="color:#3498db; opacity:0.5;"></i> <?= $report_data['summary']['total_orders'] ?? 0 ?></p>
+                </div>
+                
+                <div class="stat-card card-green">
+                    <h4>Total Revenue</h4>
+                    <p style="color: #27ae60;">MWK <?= number_format($report_data['summary']['total_revenue'] ?? 0, 2) ?></p>
+                </div>
+                
+                <div class="stat-card card-purple">
+                    <h4>Avg. Order Value</h4>
+                    <p>MWK <?= number_format($report_data['summary']['average_order_value'] ?? 0, 2) ?></p>
+                </div>
+            </div>
+
+            <!-- Two Column Layout for Tables -->
+            <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+                
+                <!-- Best Sellers -->
+                <div>
+                    <h3 class="section-title">Best Sellers</h3>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Meal Name</th>
+                                    <th>Qty Sold</th>
+                                    <th>Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($report_data['best_sellers'] as $index => $item): ?>
+                                    <tr>
+                                        <td><span class="badge" style="background:#eee;"><?= $index + 1 ?></span></td>
+                                        <td style="font-weight:bold;"><?= htmlspecialchars($item['meal_name']) ?></td>
+                                        <td><?= $item['total_quantity'] ?></td>
+                                        <td>MWK <?= number_format($item['total_revenue'], 2) ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Daily Trends -->
+                <div>
+                    <h3 class="section-title">Daily Sales </h3>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Orders</th>
+                                    <th>Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($report_data['daily_trends'] as $day): ?>
+                                    <tr>
+                                        <td><?= date('M d, Y', strtotime($day['sale_date'])) ?></td>
+                                        <td><?= $day['daily_orders'] ?></td>
+                                        <td>MWK <?= number_format($day['daily_revenue'], 2) ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        <?php endif; ?>
+
+    </div>
+</div>
+
+</body>
+</html>

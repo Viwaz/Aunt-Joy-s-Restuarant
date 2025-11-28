@@ -29,12 +29,15 @@ create table orders(
 	order_id int auto_increment primary key,
     user_id int ,
     total_amount decimal(10,2),
-    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status enum('pending','en route','delivered') default 'pending',
     foreign key (user_id) references users(id)
 );
 alter table orders
 add column order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+alter table orders
+add column delivery_address varchar(100),
+add column phone_num varchar(15);
 create table order_itmes(
 	id int AUTO_INCREMENT PRIMARY KEY,
     order_id int,
@@ -65,31 +68,11 @@ INSERT INTO categories(category_name) VALUES
 replace menu_items(id,name,description,price_MWK,image,category) 
 VALUES(1, 'Beef Fried Rice', 'Tastey bomb of flavours ready to explode',6000, 'Beef fried rice.jpg',2 );
 
-Select cat.category_name as category
-from menu_items m
-join categories cat 
-on m.category = cat.id;
-
-select cat.id from categories cat where cat.category_name = 'Lunch';
-
 select * from menu_items;
 select * from users;
 select * from categories;
 select * from orders;
 select * from order_items;
-SELECT 
-		m.name as meal_name,
-		SUM(oi.quantity) as total_quantity,
-		SUM(oi.quantity * oi.price) as total_revenue
-	FROM order_items oi
-		JOIN menu_items m ON oi.menu_item_id = m.id
-		JOIN orders o ON oi.order_id = o.order_id
-		WHERE DATE(o.order_date) BETWEEN '2025-11-1' AND '2025-11-20'
-		AND o.status = 'Delivered'
-		GROUP BY m.id, m.name
-		ORDER BY total_quantity DESC
-		LIMIT 10;
-        
 SELECT * FROM categories ORDER BY category_name;
 
 

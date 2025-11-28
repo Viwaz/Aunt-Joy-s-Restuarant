@@ -134,18 +134,25 @@ if (isset($_GET['search']) && !empty($_GET['keyword'])) {
     </div>
     <script>
 function addToCart(mealId) {
+    const quantity = document.getElementById(`qty-${mealId}`).value || 1;
+
     fetch("cart.php", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: "meal_id=" + mealId
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ menu_item_id: mealId, quantity: quantity })
     })
+    .then(res => res.json())
     .then(data => {
-        if (data === "SUCCESS") {
+        if (data.success) {
             alert("Item added to cart!");
             updateCartCount();
+        } else {
+            alert("Failed to add to cart: " + data.message);
         }
-    });
+    })
+    .catch(err => console.error(err));
 }
+
 
 function updateCartCount() {
     fetch("cart_count.php")

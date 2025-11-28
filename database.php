@@ -18,7 +18,8 @@
                 $this->db_name,
                 $this->port
             );
-            $this->conn->set_charset("set names utf8");
+           $this->conn->set_charset("utf8");
+
             
         } catch(mysqli_sql_exception $exception) {
             echo "Connection error: " . $exception->getMessage();
@@ -27,4 +28,3 @@
         return $this->conn;
         }
     }
-?>

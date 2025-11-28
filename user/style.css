@@ -1,0 +1,24 @@
+
+.card-img-top {
+    height: 200px;  
+    object-fit: cover;
+}
+
+.card-body {
+    padding: 0.8rem;
+    transition: 0.5s;
+}
+
+.card-title {
+    font-size: 1rem;
+    margin-bottom: 0.3rem;
+}
+
+.card-text {
+    font-size: 0.9rem;
+}
+
+.mt-auto p, .mt-auto button {
+    margin-top: 0.2rem;
+}
+
