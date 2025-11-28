@@ -118,7 +118,7 @@ $username = $stmt->get_result()->fetch_object()->username;
             <li><a href="#overview" class="active" onclick="showSection('overview-section')">📊 Overview</a></li>
             <li><a href="#meals-section" onclick="showSection('meals-section')">🍔 Meals</a></li>
             <li><a href="#users-section" onclick="showSection('users-section')">👥 Users</a></li>
-            <li><a href="../auth/logout.php" class="logout" position = 'bottom'>Logout</a></li>
+            <!-- <li><a href="../auth/logout.php" class="logout" position = 'bottom'>Logout</a></li> -->
         </ul>
     </div>
 
@@ -126,8 +126,9 @@ $username = $stmt->get_result()->fetch_object()->username;
     <!-- Main Content -->
     <div class="main-content">
         <header>
-            <div>
+            <div class = "header">
                 <h1>Admin Dashboard</h1>
+                <a href="../auth/logout.php" class="logout" position="right">Logout</a>
                 <p style="color: #777;">Welcome, <?= htmlspecialchars($username); ?></p>
             </div>
             <?php if($message): ?>
@@ -176,11 +177,17 @@ $username = $stmt->get_result()->fetch_object()->username;
                         <?php  while($row = $meals->fetch_assoc()){
                         ?>
                         <tr>
-                            <td><img src="<?= '../menu/'.$row['image'] ?: 'placeholder.jpg' ?>" class="meal-img" alt="Food"></td>
+                            <td><img src="<?= '../menu/'.$row['image'] ?: 'placeholder.jpg' ?>" class="meal-img" alt="Food" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;"></td>
                             <td>
                                 <strong><?= htmlspecialchars($row['name']); ?></strong><br>
                                 <small style="color:#888;"><?= substr(htmlspecialchars($row['description']), 0, 30); ?>...</small>
                             </td>
+                            <?php $query = "SELECT category_name FROM categories WHERE id = ?";
+                                  $stmt = $db->prepare($query);
+                                  $stmt->bind_param("i", $row['category']);
+                                  $stmt->execute();
+                                  $row['category'] = $stmt->get_result()->fetch_object()->category_name;
+                            ?>
                             <td><?= htmlspecialchars($row['category']); ?></td>
                             <td>MWK<?= htmlspecialchars($row['price_MWK']); ?></td>
                             <td>

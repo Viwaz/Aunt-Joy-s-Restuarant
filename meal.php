@@ -24,6 +24,14 @@ class Meal {
     }
 
     public function create($name, $description, $price, $category, $image) {
+        // getting the id of the category from categories
+        $query = "SELECT id from categories where category_name = ? ";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("s", $category);
+        $stmt->execute();
+        $category = $stmt->get_result()->fetch_object()->id;
+
+        // inserting into menu_items
         $query = "INSERT INTO menu_items(name, description, price_MWK, category, image)
                   VALUES (?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($query);

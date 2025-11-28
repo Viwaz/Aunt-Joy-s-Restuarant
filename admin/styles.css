@@ -37,8 +37,22 @@ body {
     
 }
 .sidebar a:hover, .sidebar a.active { background-color: #ff9f43; color: white; }
-.sidebar a.logout { background-color: #e74c3c; margin-top: 50px; text-align:center; }
+
 .sidebar a.logo:hover { background: none; color: black; }
+
+.main-content div.header a.logout {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 8px;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.2s;
+    font-size: 22px;
+    font-weight: 500;
+}
+.main-content div.header a.logout { background-color: #e74c3c; margin-top: 15px; text-align:center; }
+
 
 /* Main Content */
 .main-content {
@@ -116,8 +130,8 @@ th, td {
 th { background-color: #f8f9fa; color: #2c3e50; font-weight: 600; }
 tr:hover { background-color: #f1f2f6; }
 .meal-img {
-    width: 75px;
-    height: 75px;
+    width: 100px;
+    height: 100px;
     object-fit: cover;
     border-radius: 8px;
 }
@@ -182,6 +196,7 @@ tr:hover { background-color: #f1f2f6; }
 /* Form inputs in modal */
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+
 .form-group input, .form-group select, .form-group textarea {
     width: 100%;
     padding: 10px;
