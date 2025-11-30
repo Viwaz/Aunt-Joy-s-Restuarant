@@ -1,94 +1,22 @@
 <?php
 require_once '../auth/auth.php';
-
+require_once  '../includes/Database.php';
 
 $auth = new Auth();
 
 if (!$auth->isLoggedIn() || !$auth->checkRole('admin')) {
-    die("Access denied: Admin only.");//terminating the session
+    header("Location: ../login.php");
+    exit;
 }
 
-
-require_once '../meal.php';
-require_once '../auth/database.php';
-require_once 'user.php';
-// require_once 'meal.php';
-
-// --- Authorization Check ---
-// In a real app, ensure session check looks like: if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') { header("Location: login.php"); exit; }
-
-// --- Initialize Database and Objects ---
-$database = new Database();
-$db = $database->getConnection();
-$userObj = new User($db);
-$mealObj = new Meal($db);
-
-$message = "";
-
-// --- Handle Form Submissions ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    
-    // 1. Handle New Meal Creation
-    if (isset($_POST['action']) && $_POST['action'] == 'add_meal') {
-        $name = $_POST['name'];
-        $desc = $_POST['description'];
-        $price = $_POST['price'];
-        $cat = $_POST['category'];
- 
-        
-        // Basic Image Handling (In production, use proper file upload checks)
-        $image = "default_food.png";
-        if(isset($_FILES['image']['name']) && $_FILES['image']['name'] != ""){
-            $target_dir = "../menu/";
-            if (!file_exists($target_dir)) { mkdir($target_dir, 0777, true); }
-            $image = $target_dir . basename($_FILES["image"]["name"]);
-            move_uploaded_file($_FILES["image"]["tmp_name"], $image);
-        }
-
-        if ($mealObj->create($name, $desc, $price, $cat, $image)) {
-            $message = "Meal added successfully!";
-        } else {
-            $message = "Error adding meal.";
-        }
-    }
-
-    // 2. Handle User Creation (Admin adding staff)
-    if (isset($_POST['action']) && $_POST['action'] == 'add_user') {
-        $u_name = $_POST['username'];
-        $u_email = $_POST['email'];
-        $u_pass = $_POST['password'];
-        $u_role = $_POST['role']; // Admin, Sales, Manager
-
-        if ($userObj->create($u_name, $u_email, $u_pass, $u_role)) {
-            $message = "User created with role: $u_role";
-        } else {
-            $message = "Error creating user.";
-        }
-    }
-
-    // 3. Handle Meal Deletion
-    if (isset($_POST['delete_meal_id'])) {
-        $mealObj->delete($_POST['delete_meal_id']);
-        $message = "Meal deleted.";
-    }
-
-    // 4. Handle Availability Toggle
-    if (isset($_POST['toggle_id'])) {
-        $mealObj->toggleAvailability($_POST['toggle_id'], $_POST['current_status']);
-    }
-}
-
-// Fetch Data for View
-$meals = $mealObj->readAll();
-// Fetch Users (Assuming User class doesn't have readAll, doing raw query for assignment speed)
-$users = $userObj->readAll();
-    
-// getting username from session
+// Get username for greeting
+$db = (new Database())->getConnection();
 $query = "SELECT username FROM users WHERE id = ?";
 $stmt = $db->prepare($query);
-$stmt->bind_param("i", $_SESSION['id']);
+$stmt->bind_param("i", $_SESSION['user_id']);
 $stmt->execute();
-$username = $stmt->get_result()->fetch_object()->username;
+$result = $stmt->get_result()->fetch_object();
+$username = $result ? $result->username : 'Admin';
 ?>
 
 
@@ -131,11 +59,6 @@ $username = $stmt->get_result()->fetch_object()->username;
                 <a href="../auth/logout.php" class="logout" position="right">Logout</a>
                 <p style="color: #777;">Welcome, <?= htmlspecialchars($username); ?></p>
             </div>
-            <?php if($message): ?>
-                <div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 5px;">
-                    <?= $message; ?>
-                </div>
-            <?php endif; ?>
         </header>
 
         <!-- SECTIONS -->
@@ -144,11 +67,11 @@ $username = $stmt->get_result()->fetch_object()->username;
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>Total Meals</h3>
-                    <p><?= $meals->num_rows; ?></p>
+                    <p id="total-meals">0</p>
                 </div>
                 <div class="stat-card">
                     <h3>Total Users</h3>
-                    <p><?= $users->num_rows; ?></p>
+                    <p id="total-users">0</p>
                 </div>
             </div>
         </div>
@@ -157,12 +80,12 @@ $username = $stmt->get_result()->fetch_object()->username;
         <!-- 2. Meals Section -->
             
             <div class="section-header" >
-                <h2>Current Menu Items(<?= $meals->num_rows; ?>)</h2>
+                <h2>Current Menu Items(0)</h2>
                 <button class="btn-primary" onclick="openModal('mealModal')">+ Add New Meal</button>
             </div>
             
             <div class="table-responsive">
-                <table>
+                <table id="meals-table">
                     <thead>
                         <tr>
                             <th>Image</th>
@@ -174,61 +97,21 @@ $username = $stmt->get_result()->fetch_object()->username;
                         </tr>
                     </thead>
                     <tbody>
-                        <?php  while($row = $meals->fetch_assoc()){
-                        ?>
-                        <tr>
-                            <td><img src="<?= '../menu/'.$row['image'] ?: 'placeholder.jpg' ?>" class="meal-img" alt="Food" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;"></td>
-                            <td>
-                                <strong><?= htmlspecialchars($row['name']); ?></strong><br>
-                                <small style="color:#888;"><?= substr(htmlspecialchars($row['description']), 0, 30); ?>...</small>
-                            </td>
-                            <?php $query = "SELECT category_name FROM categories WHERE id = ?";
-                                  $stmt = $db->prepare($query);
-                                  $stmt->bind_param("i", $row['category']);
-                                  $stmt->execute();
-                                  $row['category'] = $stmt->get_result()->fetch_object()->category_name;
-                            ?>
-                            <td><?= htmlspecialchars($row['category']); ?></td>
-                            <td>MWK<?= htmlspecialchars($row['price_MWK']); ?></td>
-                            <td>
-                                <form method="POST" style="display:inline;">
-                                    <input type="hidden" name="toggle_id" value="<?= $row['id']; ?>">
-                                    <input type="hidden" name="current_status" value="<?= $row['availability']; ?>">
-                                    <button type="submit" style="border:none; background:none; cursor:pointer;">
-                                        <?php if($row['availability'] == 'in_stock'): ?>
-                                            <span class="badge badge-success">In Stock</span>
-                                        <?php else: ?>
-                                            <span class="badge badge-danger">Out of Stock</span>
-                                        <?php endif; ?>
-                                    </button>
-                                </form>
-                            </td>
-                            <td>
-                                <form method="POST" onsubmit="return confirm('Delete this meal?');" style="display:inline;">
-                                    <input type="hidden" name="delete_meal_id" value="<?= $row['id']; ?>">
-                                    <button class="btn-sm btn-delete">Delete</button>
-                                </form>
-                                <button class="btn-sm btn-edit" onclick="openModal('editMealModal')">Edit</button>
-                            </td>
-                        </tr>
-                        <?php }?>
+                        <!-- Populated by admin.js -->
                     </tbody>
                 </table>
-                
             </div>
-
-            
         </div>
 
         <div id="users-section" style="display:block;" >
         <!-- 3. Users Section  -->
 
             <div class="section-header">
-                <h2>System Users(<?= $users->num_rows; ?>)</h2>
+                <h2>System Users(0)</h2>
                 <button class="btn-primary" onclick="openModal('userModal')">+ Add New Staff</button>
             </div>
             <div class="table-responsive">
-                <table>
+                <table id="users-table">
                     <thead>
                         <tr>
                             <th>Username</th>
@@ -240,22 +123,7 @@ $username = $stmt->get_result()->fetch_object()->username;
                     </thead>
                     
                     <tbody>
-                        <?php while($u = $users -> FETCH_ASSOC()): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($u['username']); ?></td>
-                            <td><?= htmlspecialchars($u['email']); ?></td>
-                            <td>
-                                <span style="text-transform: capitalize; font-weight:bold; color: #555;">
-                                    <?= htmlspecialchars($u['role']); ?>
-                                </span>
-                            </td>
-                            <td><?= $u['created_at']; ?></td>
-                            <td>
-                                <button class="btn-sm btn-delete" disabled>Delete</button>
-                                <button class="btn-sm btn-edit" disabled>Edit</button>
-                            </td>
-                            <?php endwhile; ?>
-                        </tr>
+                        <!-- Populated by admin.js -->
                     </tbody>
                 </table>
             </div>
@@ -271,8 +139,7 @@ $username = $stmt->get_result()->fetch_object()->username;
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal('mealModal')">&times;</span>
         <h2>Add New Meal</h2>
-        <form method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="action" value="add_meal">
+        <form id="mealForm" onsubmit="addMeal(event)" enctype="multipart/form-data">
             <div class="form-group">
                 <label>Meal Name</label>
                 <input type="text" name="name" required>
@@ -308,23 +175,22 @@ $username = $stmt->get_result()->fetch_object()->username;
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal('userModal')">&times;</span>
         <h2>Add New Staff/User</h2>
-        <form method="POST">
-            <input type="hidden" name="action" value="add_user">
+        <form id="userForm" onsubmit="addUser(event)">
             <div class="form-group">
                 <label>Username</label>
-                <input type="text" name="username" required>
+                <input type="text" id="username" name="username" required>
             </div>
             <div class="form-group">
                 <label>Email</label>
-                <input type="email" name="email" required>
+                <input type="email" id="email" name="email" required>
             </div>
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" name="password" required>
+                <input type="password" id="password" name="password" required>
             </div>
             <div class="form-group">
                 <label>Role</label>
-                <select name="role">
+                <select id="role" name="role">
                     <option value="admin">Administrator</option>
                     <option value="manager">Manager</option>
                     <option value="sales">Sales Staff</option>
@@ -345,37 +211,6 @@ $username = $stmt->get_result()->fetch_object()->username;
     </div>
 
  </div>
-<script>
-// Simple JS for tab switching
-function showSection(sectionId) {
-    // Hide all sections
-    document.getElementById('overview-section').style.display = 'none';
-    document.getElementById('meals-section').style.display = 'none';
-    document.getElementById('users-section').style.display = 'none';
-
-    // Remove active class from links
-    document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
-
-    // Show target and activate link
-    document.getElementById(sectionId).style.display = 'block';
-    document.querySelector(`.sidebar a[href="#${sectionId}"]`).classList.add('active');
-}
-
-// Modal Logic
-function openModal(modalId) {
-    document.getElementById(modalId).style.display = 'flex';
-}
-
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-}
-
-// Close modal if clicking outside
-window.onclick = function(event) {
-    if (event.target.classList.contains('modal')) {
-        event.target.style.display = "none";
-    }
-}
-</script>
+<script src="admin.js"></script>
 </body>
 </html>

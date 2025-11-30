@@ -1,7 +1,7 @@
 <?php
 header("Content-Type: application/json");
 session_start();
-require_once "../database.php"; 
+require_once dirname(__DIR__) . '/includes/Database.php'; 
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {

@@ -1,6 +1,3 @@
-<!-- Handles all user-related operations irregardless of role -->
-<!-- CRUD OPERATIONS -->
-
 <?php
 require_once '../auth/database.php';
 /**

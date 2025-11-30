@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'admin': header("Location: ../admin/dashboard.php"); break;
             case 'sales': header("Location: ../sales/dashboard.php"); break;
             case 'manager': header("Location: ../manager/dashboard.php"); break;
-            case 'customer': header("Location: ../index2.php"); break;
+            case 'customer': header("Location: ../user/meals.html"); break;
             default: header("Location: ../index.php");
         }
         exit;

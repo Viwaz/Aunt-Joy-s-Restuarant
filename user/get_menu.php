@@ -1,6 +1,6 @@
 <?php
 header("Content-Type: application/json");
-require_once("../database.php");  // adjust path based on your folder
+require_once dirname(__DIR__) . '/includes/Database.php';
 
 $db = new Database();
 $conn = $db->getConnection();
@@ -32,7 +32,7 @@ try {
                 "name" => $meal["name"],
                 "description" => $meal["description"],
                 "price" => $meal["price_MWK"],
-                "image" => "../uploads/" . urlencode($meal["image"])  // adjust folder if needed
+                "image" => "../menu/" . urlencode($meal["image"])  // adjust folder if needed
             ];
         }
 

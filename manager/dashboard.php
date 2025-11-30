@@ -219,7 +219,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || true) {
         <ul>
             <li><a href="dashboard.php" class="active"><i class="fas fa-chart-line"></i> Sales Reports</a></li>
             <!-- Add more manager links here if needed -->
-            <li><a href="logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li><a href="../auth/logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </div>
 

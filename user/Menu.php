@@ -1,6 +1,6 @@
 <?php
 header("Content-Type: application/json");
-require_once "../database.php"; // your Database class
+require_once dirname(__DIR__) . '/includes/Database.php';
 
 $db = new Database();
 $conn = $db->getConnection();

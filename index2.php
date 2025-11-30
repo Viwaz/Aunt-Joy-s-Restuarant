@@ -1,13 +1,13 @@
 <?php
 session_start();
-require_once 'auth/database.php';
+require_once './auth/database.php';
 
 // DB Connection
 $db = new Database();
 $conn = $db->getConnection();
 
 // Fetch meals from DB
-$query = $conn->prepare("SELECT * FROM meals WHERE availability='in_stock'");
+$query = $conn->prepare("SELECT * FROM menu_items WHERE availability = 'in_stock'");
 $query->execute();
 $result = $query->get_result();
 $meals = $result->fetch_all(MYSQLI_ASSOC);
