@@ -142,15 +142,15 @@ $username = $result ? $result->username : 'Admin';
             </div>
             <div class="form-group">
                 <label>Description</label>
-                <textarea id = "desrciption" name="description" required></textarea>
+                <textarea id = "description" name="description" required></textarea>
             </div>
             <div class="form-group">
                 <label>Price (MK)</label>
-                <input type="number" id= "price"  name="price" required>
+                <input type="number" id="price"  name="price" required>
             </div>
             <div class="form-group">
                 <label>Category</label>
-                <select id = "category" name="category">
+                <select id ="category" name="category">
                     <option value="Breakfast">Breakfast</option>
                     <option value="Lunch">Lunch</option>
                     <option value="Dinner">Dinner</option>
@@ -159,7 +159,7 @@ $username = $result ? $result->username : 'Admin';
             </div>
             <div class="form-group">
                 <label>Image</label>
-                <input type="file" id = "image" name="image">
+                <input type="file" id ="image" name="image">
             </div>
             <button type="submit" class="btn-primary" style="width:100%;">Save Meal</button>
         </form>
