@@ -1,7 +1,7 @@
 <?php
 // ... PHP register logic ...
-require_once 'database.php';
-require_once '../admin/user.php';
+require_once __DIR__.'/../includes/Database.php';
+require_once __DIR__.'/../includes/user.php';
 
 $success_message = '';
 $error_message = '';

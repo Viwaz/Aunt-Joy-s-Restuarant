@@ -2,7 +2,7 @@
 header("Content-Type: application/json");
 
 require_once dirname(__DIR__) . '/includes/Database.php';
-require_once dirname(__DIR__) . '/meal.php';
+require_once dirname(__DIR__) . '/includes/meal.php';
 session_start();
 // Auth check
 if (!isset($_SESSION['id']) || $_SESSION['role'] !== 'admin') {

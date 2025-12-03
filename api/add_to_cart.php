@@ -4,11 +4,11 @@ session_start();
 require_once dirname(__DIR__) . '/includes/Database.php'; 
 
 // Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['id'])) {
     echo json_encode(['success' => false, 'message' => 'User not logged in']);
     exit;
 }
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['id'];
 
 // Read POST data
 $input = json_decode(file_get_contents("php://input"), true);
@@ -17,8 +17,10 @@ $quantity = $input['quantity'] ?? 1;
 
 if (!$menu_item_id) {
     echo json_encode(['success' => false, 'message' => 'Invalid menu item']);
+
     exit;
 }
+
 
 $db = new Database();
 $conn = $db->getConnection();

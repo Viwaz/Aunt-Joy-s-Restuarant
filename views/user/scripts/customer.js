@@ -13,7 +13,7 @@ function escapeHtml(text) {
 // Load categories on page load
 async function loadCategories() {
     try {
-        const response = await fetch('../api/menu_api.php?action=categories');
+        const response = await fetch('../../../api/menu_api.php?action=categories');
         const data = await response.json();
 
         if (!data.success) {
@@ -50,7 +50,7 @@ function updateActiveCategory(element) {
 // Load meals by category or all
 async function loadMeals(categoryId = null) {
     try {
-        let url = '../api/menu_api.php?action=meals';
+        let url = '../../../api/menu_api.php?action=meals';
         if (categoryId) {
             url += '&category_id=' + categoryId;
         }
@@ -75,7 +75,7 @@ async function loadMeals(categoryId = null) {
             const card = document.createElement('div');
             card.className = 'meal-card';
             card.innerHTML = `
-                <img src="../menu/${escapeHtml(meal.image || 'placeholder.jpg')}" alt="${escapeHtml(meal.name)}" class="meal-img">
+                <img src="../../../menu/${escapeHtml(meal.image || 'placeholder.jpg')}" alt="${escapeHtml(meal.name)}" class="meal-img">
                 <h3>${escapeHtml(meal.name)}</h3>
                 <p class="meal-desc">${escapeHtml(meal.description)}</p>
                 <p class="meal-category"><small>${escapeHtml(meal.category_name)}</small></p>
@@ -106,7 +106,7 @@ async function searchMeals(event) {
     }
 
     try {
-        const response = await fetch(`../api/menu_api.php?action=search&keyword=${encodeURIComponent(keyword)}`);
+        const response = await fetch(`../../../api/menu_api.php?action=search&keyword=${encodeURIComponent(keyword)}`);
         const data = await response.json();
 
         if (!data.success) {
@@ -126,7 +126,7 @@ async function searchMeals(event) {
             const card = document.createElement('div');
             card.className = 'meal-card';
             card.innerHTML = `
-                <img src="../menu/${escapeHtml(meal.image || 'placeholder.jpg')}" alt="${escapeHtml(meal.name)}" class="meal-img">
+                <img src="../../../menu/${escapeHtml(meal.image || 'placeholder.jpg')}" alt="${escapeHtml(meal.name)}" class="meal-img">
                 <h3>${escapeHtml(meal.name)}</h3>
                 <p class="meal-desc">${escapeHtml(meal.description)}</p>
                 <p class="meal-category"><small>${escapeHtml(meal.category_name)}</small></p>
@@ -150,7 +150,7 @@ async function addToCart(mealId) {
     const quantity = parseInt(document.getElementById(`qty-${mealId}`).value) || 1;
 
     try {
-        const response = await fetch('../api/add_to_cart.php', {
+        const response = await fetch('../../../api/add_to_cart.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ menu_item_id: mealId, quantity })
@@ -173,9 +173,9 @@ async function addToCart(mealId) {
 // Update cart count in header
 async function updateCartCount() {
     try {
-        const response = await fetch('../api/cart_count.php');
-        const count = await response.text();
-        document.getElementById('cart-count').textContent = count || '0';
+        const response = await fetch('../../../api/cart_count.php');
+        const data = await response.json();
+        document.getElementById('cart-count').textContent = data.count || '0';
     } catch (error) {
         console.error('Error updating cart count:', error);
     }

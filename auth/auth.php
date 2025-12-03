@@ -1,5 +1,5 @@
 <?php
-require_once 'database.php';
+require_once __DIR__.'/../includes/Database.php';
 
 class Auth {
     private $conn;
@@ -28,7 +28,7 @@ class Auth {
     }
 
     public function isLoggedIn() {
-        return isset($_SESSION['id']);
+    return isset($_SESSION['id']);
     }
 
     public function checkRole($requiredRole) {

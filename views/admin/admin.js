@@ -28,7 +28,9 @@ function showSection(sectionId) {
 // ===== MEALS API =====
 async function loadMeals() {
     try {
-        const response = await fetch('../api/meals_api.php?action=list');
+        
+           ;  // /project/path/api/meals_api.php
+        const response = await fetch('../../api/meals_api.php?action=list');
         const data = await response.json();
 
         if (!data.success) {
@@ -42,7 +44,7 @@ async function loadMeals() {
         data.meals.forEach(meal => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><img src="../menu/${meal.image || 'placeholder.jpg'}" class="meal-img" alt="Food" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;"></td>
+                <td><img src="../../menu/${meal.image || 'placeholder.jpg'}" class="meal-img" alt="Food" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;"></td>
                 <td>
                     <strong>${escapeHtml(meal.name)}</strong><br>
                     <small style="color:#888;">${escapeHtml(meal.description).substring(0, 30)}...</small>
@@ -58,7 +60,7 @@ async function loadMeals() {
                 </td>
                 <td>
                     <button class="btn-sm btn-delete" onclick="deleteMeal(${meal.id})">Delete</button>
-                    <button class="btn-sm btn-edit" disabled>Edit</button>
+                    <button class="btn-sm btn-edit" onclick ="openModal('editMealModal')">Edit</button>
                 </td>
             `;
             tbody.appendChild(row);
@@ -67,6 +69,8 @@ async function loadMeals() {
         // Update meal count
         document.querySelector('#meals-section .section-header h2').textContent = 
             `Current Menu Items(${data.meals.length})`;
+        document.querySelector('#overview-section .stat-card p#total-meals').textContent = `${data.meals.length}`;
+            
 
     } catch (error) {
         console.error('Error loading meals:', error);
@@ -77,12 +81,17 @@ async function loadMeals() {
 async function addMeal(event) {
     event.preventDefault();
 
-    const formData = new FormData(document.getElementById('mealForm'));
+    const name = document.getElementById("name").value;
+    const description = document.getElementById("description").value;
+    const price = document.getElementById("price").value;
+    const category = document.getElementById("category").value;
+    const image = document.getElementById("image").value;
     
     try {
-        const response = await fetch('../api/meals_api.php?action=create', {
+        const response = await fetch('../../api/meals_api.php?action=create', {
             method: 'POST',
-            body: formData
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, description, price, category, image })
         });
 
         const data = await response.json();
@@ -105,7 +114,7 @@ async function deleteMeal(mealId) {
     if (!confirm('Delete this meal?')) return;
 
     try {
-        const response = await fetch('../api/meals_api.php?action=delete', {
+        const response = await fetch('../../api/meals_api.php?action=delete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: mealId })
@@ -127,7 +136,7 @@ async function deleteMeal(mealId) {
 
 async function toggleMealAvailability(mealId, currentStatus) {
     try {
-        const response = await fetch('../api/meals_api.php?action=toggle', {
+        const response = await fetch('../../api/meals_api.php?action=toggle', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: mealId, status: currentStatus })
@@ -149,7 +158,7 @@ async function toggleMealAvailability(mealId, currentStatus) {
 // ===== USERS API =====
 async function loadUsers() {
     try {
-        const response = await fetch('../api/users_api.php?action=list');
+        const response = await fetch('../../api/users_api.php?action=list');
         const data = await response.json();
 
         if (!data.success) {
@@ -178,6 +187,8 @@ async function loadUsers() {
         // Update user count
         document.querySelector('#users-section .section-header h2').textContent = 
             `System Users(${data.users.length})`;
+        document.querySelector('#overview-section .stat-card p#total-users').textContent = 
+            `${data.users.length}`;
 
     } catch (error) {
         console.error('Error loading users:', error);
@@ -194,7 +205,7 @@ async function addUser(event) {
     const role = document.getElementById('role').value;
 
     try {
-        const response = await fetch('../api/users_api.php?action=create', {
+        const response = await fetch('../../api/users_api.php?action=create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, email, password, role })

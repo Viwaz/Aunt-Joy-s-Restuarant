@@ -1,17 +1,15 @@
 <?php
-require_once '../auth/auth.php';
+require_once __DIR__.'/../../auth/auth.php';
 
 $auth = new Auth();
 
 if (!$auth->isLoggedIn() || !$auth->checkRole('manager')) {
     die("Access denied: Manager only.");
 }
-?>
 
-<?php
 
 // import necessary classes
-require_once '../auth/database.php';
+require_once '../../includes/database.php';
 
 class ReportManager {
     private $db;
@@ -32,7 +30,7 @@ class ReportManager {
                     AVG(total_amount) as average_order_value
                   FROM orders
                   WHERE DATE(order_date) BETWEEN ? AND ?
-                  AND status = 'Delivered'";
+                  AND status = 'pending'";
         
         $stmt = $this->db->prepare($query);
           if (!$stmt) {
@@ -45,7 +43,7 @@ class ReportManager {
         $summary = $result->fetch_assoc();
         
         // Best-selling items
-        $query = "SELECT 
+        $query = "SELECT
                     m.name as meal_name,
                     SUM(oi.quantity) as total_quantity,
                     SUM(oi.quantity * oi.price) as total_revenue
@@ -53,7 +51,7 @@ class ReportManager {
                   JOIN menu_items m ON oi.menu_item_id = m.id
                   JOIN orders o ON oi.order_id = o.order_id
                   WHERE DATE(o.order_date) BETWEEN ? AND ?
-                  AND o.status = 'Delivered'
+                  AND o.status = 'pending'
                   GROUP BY m.id, m.name
                   ORDER BY total_quantity DESC
                   LIMIT 10";
@@ -75,7 +73,7 @@ class ReportManager {
                     SUM(total_amount) as daily_revenue
                   FROM orders
                   WHERE DATE(order_date) BETWEEN ? AND ?
-                  AND status = 'Delivered'
+                  AND status = 'pending'
                   GROUP BY DATE(order_date)
                   ORDER BY sale_date";
         
@@ -166,9 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $year = $current_year;
     $report_data = $reportManager->getSalesReport($month, $year);
 }
-?>
 
-<?php
 
 
 // --- Initialization ---
@@ -176,27 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $month = $_POST['month'] ?? date('m');
 $year = $_POST['year'] ?? date('Y');
 
-// DUMMY DATA FOR VISUALIZATION 
-// (Replace this block with your actual database queries later)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' || true) {
-    $report_data = [
-        'summary' => [
-            'total_orders' => 124,
-            'total_revenue' => 450200.00,
-            'average_order_value' => 3630.65
-        ],
-        'best_sellers' => [
-            ['meal_name' => 'Chambo & Nsima', 'total_quantity' => 45, 'total_revenue' => 135000],
-            ['meal_name' => 'Butter Chicken', 'total_quantity' => 32, 'total_revenue' => 96000],
-            ['meal_name' => 'Mzuzu Coffee', 'total_quantity' => 28, 'total_revenue' => 42000],
-        ],
-        'daily_trends' => [
-            ['sale_date' => '2025-11-01', 'daily_orders' => 12, 'daily_revenue' => 45000],
-            ['sale_date' => '2025-11-02', 'daily_orders' => 15, 'daily_revenue' => 52000],
-            ['sale_date' => '2025-11-03', 'daily_orders' => 8, 'daily_revenue' => 28000],
-        ]
-    ];
-}
+
 ?>
 
 <!DOCTYPE html>
@@ -219,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || true) {
         <ul>
             <li><a href="dashboard.php" class="active"><i class="fas fa-chart-line"></i> Sales Reports</a></li>
             <!-- Add more manager links here if needed -->
-            <li><a href="../auth/logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li><a href="../../auth/logout.php" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </div>
 

@@ -1,6 +1,3 @@
-<!-- Handles all user-related operations irregardless of role -->
-<!-- CRUD OPERATIONS -->
-
 <?php
 require_once 'database.php';
 /**
@@ -41,7 +38,8 @@ class User{
          */
         $readAll = $this->conn->prepare("SELECT * FROM $this->table ORDER BY id DESC");
         $readAll->execute();
-        return $readAll;
+        $result = $readAll->get_result();
+        return $result ;
     }
 
     public function update($username,$email,$role,$id){

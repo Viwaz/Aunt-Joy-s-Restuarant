@@ -1,7 +1,6 @@
 <?php
 header("Content-Type: application/json");
-session_start();
-require_once dirname(__DIR__) . '/includes/Database.php';
+require_once '../includes/Database.php';
 
 $db = (new Database())->getConnection();
 

@@ -1,11 +1,11 @@
 <?php
-require_once '../auth/auth.php';
-require_once  '../includes/Database.php';
+    require_once __DIR__.'/../../auth/auth.php';
+require_once  __DIR__.'/../../includes/Database.php';
 
 $auth = new Auth();
 
 if (!$auth->isLoggedIn() || !$auth->checkRole('admin')) {
-    header("Location: ../login.php");
+    header("Location: ../../auth/login.php");
     exit;
 }
 
@@ -28,10 +28,6 @@ $username = $result ? $result->username : 'Admin';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     html { font-size:25px; }
-    /* .px { font-size: 20px; }
-    .em { font-size: 1.5em; }
-    .rem { font-size: 1.25rem; }
-    .vw { font-size: 4vw; } */
   </style>
     <title>Admin Dashboard - Aunt Joy's</title>
     <link rel="stylesheet" href="styles.css">
@@ -43,7 +39,7 @@ $username = $result ? $result->username : 'Admin';
     <div class="sidebar">
         <a href="dashboard.php" class = "logo"><h2>Aunt Joy's Restuarant</h2></a>
         <ul>
-            <li><a href="#overview" class="active" onclick="showSection('overview-section')">📊 Overview</a></li>
+            <li><a href="#overview" class="active" onclick="showSection('overview-section')"> Overview</a></li>
             <li><a href="#meals-section" onclick="showSection('meals-section')">🍔 Meals</a></li>
             <li><a href="#users-section" onclick="showSection('users-section')">👥 Users</a></li>
             <!-- <li><a href="../auth/logout.php" class="logout" position = 'bottom'>Logout</a></li> -->
@@ -56,7 +52,7 @@ $username = $result ? $result->username : 'Admin';
         <header>
             <div class = "header">
                 <h1>Admin Dashboard</h1>
-                <a href="../auth/logout.php" class="logout" position="right">Logout</a>
+                <a href="../../auth/logout.php" class="logout" position="right"><i class="fas fa-sign-out-alt"></i>Logout</a>
                 <p style="color: #777;">Welcome, <?= htmlspecialchars($username); ?></p>
             </div>
         </header>
@@ -142,19 +138,19 @@ $username = $result ? $result->username : 'Admin';
         <form id="mealForm" onsubmit="addMeal(event)" enctype="multipart/form-data">
             <div class="form-group">
                 <label>Meal Name</label>
-                <input type="text" name="name" required>
+                <input type="text" id= "name" name="name" required>
             </div>
             <div class="form-group">
                 <label>Description</label>
-                <textarea name="description" required></textarea>
+                <textarea id = "desrciption" name="description" required></textarea>
             </div>
             <div class="form-group">
                 <label>Price (MK)</label>
-                <input type="number" step="0.01" name="price" required>
+                <input type="number" id= "price"  name="price" required>
             </div>
             <div class="form-group">
                 <label>Category</label>
-                <select name="category">
+                <select id = "category" name="category">
                     <option value="Breakfast">Breakfast</option>
                     <option value="Lunch">Lunch</option>
                     <option value="Dinner">Dinner</option>
@@ -163,7 +159,7 @@ $username = $result ? $result->username : 'Admin';
             </div>
             <div class="form-group">
                 <label>Image</label>
-                <input type="file" name="image">
+                <input type="file" id = "image" name="image">
             </div>
             <button type="submit" class="btn-primary" style="width:100%;">Save Meal</button>
         </form>

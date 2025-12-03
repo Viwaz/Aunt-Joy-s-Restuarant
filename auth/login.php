@@ -9,12 +9,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $role = $auth->login($email, $password);
 
     if ($role) {
+        // Merge any pending cart saved in session into the user's DB cart
+        if (isset($_SESSION['pending_cart']) && is_array($_SESSION['pending_cart'])) {
+            require_once dirname(__DIR__) . '/includes/Database.php';
+            $db = (new Database())->getConnection();
+            $user_id = $_SESSION['id'];
+
+            foreach ($_SESSION['pending_cart'] as $menu_item_id => $qty) {
+                $menu_item_id = (int)$menu_item_id;
+                $qty = (int)$qty;
+                if ($menu_item_id <= 0 || $qty <= 0) continue;
+
+                // Check if exists
+                $check = $db->prepare("SELECT quantity FROM cart WHERE user_id = ? AND menu_item_id = ?");
+                $check->bind_param("ii", $user_id, $menu_item_id);
+                $check->execute();
+                $res = $check->get_result();
+                if ($row = $res->fetch_assoc()) {
+                    $newQty = $row['quantity'] + $qty;
+                    $upd = $db->prepare("UPDATE cart SET quantity = ? WHERE user_id = ? AND menu_item_id = ?");
+                    $upd->bind_param("iii", $newQty, $user_id, $menu_item_id);
+                    $upd->execute();
+                } else {
+                    $ins = $db->prepare("INSERT INTO cart (user_id, menu_item_id, quantity) VALUES (?, ?, ?)");
+                    $ins->bind_param("iii", $user_id, $menu_item_id, $qty);
+                    $ins->execute();
+                }
+            }
+
+            unset($_SESSION['pending_cart']);
+        }
+
+        // If there is a requested redirect after login (e.g., checkout), honor it
+        if (!empty($_SESSION['redirect_after_login'])) {
+            $redirect = $_SESSION['redirect_after_login'];
+            unset($_SESSION['redirect_after_login']);
+            header("Location: ../" . ltrim($redirect, '/'));
+            exit;
+        }
+
         switch ($role) {
-            case 'admin': header("Location: ../admin/dashboard.php"); break;
-            case 'sales': header("Location: ../sales/dashboard.php"); break;
-            case 'manager': header("Location: ../manager/dashboard.php"); break;
-            case 'customer': header("Location: ../user/meals.html"); break;
-            default: header("Location: ../index.php");
+            case 'admin': header("Location: ../views/admin/dashboard.php"); break;
+            case 'sales': header("Location: ../views/sales/dashboard.php"); break;
+            case 'manager': header("Location: ../views/manager/dashboard.php"); break;
+            case 'customer': header("Location: ../views/user/sections/customer_interface.php"); break;
         }
         exit;
     } else {
@@ -32,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="login-page"> 
-    <div class="form-container"> <h2>🍽️ Welcome Back!</h2>
+    <div class="form-container"> <h2> <strong>Welcome Back!</strong></h2>
         
         <form method="POST" id="loginForm">
             <input type="email" name="email" placeholder="Email" required>

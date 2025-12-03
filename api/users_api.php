@@ -1,8 +1,8 @@
 <?php
 header("Content-Type: application/json");
 session_start();
-require_once dirname(__DIR__) . '/includes/Database.php';
-require_once dirname(__DIR__) . '/admin/user.php';
+require_once '../includes/Database.php';
+require_once '../includes/user.php';
 
 // Auth check
 if (!isset($_SESSION['id']) || $_SESSION['role'] !== 'admin') {
