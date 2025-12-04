@@ -20,7 +20,7 @@ if (!$auth->isLoggedIn() || $_SESSION['role'] !== 'sales') {
 <div class="sales-container">
     <!-- Sidebar -->
     <div class="sidebar">
-        <a href="dashboard.php" class="logo">Aunt Joy's Sales</a>
+        <a href="dashboard.php" class="logo"><h3>Aunt Joy's Sales Management</h3></a>
         <ul>
             <li><a href="dashboard.php" class="active">Orders</a></li>
             <li><a href="../../auth/logout.php" class="logout">Logout</a></li>

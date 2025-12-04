@@ -30,7 +30,7 @@ class ReportManager {
                     AVG(total_amount) as average_order_value
                   FROM orders
                   WHERE DATE(order_date) BETWEEN ? AND ?
-                  AND status = 'pending'";
+                  AND status = 'delivered'";
         
         $stmt = $this->db->prepare($query);
           if (!$stmt) {
@@ -51,7 +51,7 @@ class ReportManager {
                   JOIN menu_items m ON oi.menu_item_id = m.id
                   JOIN orders o ON oi.order_id = o.order_id
                   WHERE DATE(o.order_date) BETWEEN ? AND ?
-                  AND o.status = 'pending'
+                  AND o.status = 'delivered'
                   GROUP BY m.id, m.name
                   ORDER BY total_quantity DESC
                   LIMIT 10";
@@ -73,7 +73,7 @@ class ReportManager {
                     SUM(total_amount) as daily_revenue
                   FROM orders
                   WHERE DATE(order_date) BETWEEN ? AND ?
-                  AND status = 'pending'
+                  AND status = 'delivered'
                   GROUP BY DATE(order_date)
                   ORDER BY sale_date";
         
@@ -191,7 +191,7 @@ $year = $_POST['year'] ?? date('Y');
     
     <!-- Sidebar -->
     <div class="sidebar">
-        <h2>📊 Manager Panel</h2>
+        <h2>Aunt Joy's Manager Panel</h2>
         <ul>
             <li><a href="dashboard.php" class="active"><i class="fas fa-chart-line"></i> Sales Reports</a></li>
             <!-- Add more manager links here if needed -->
@@ -215,10 +215,10 @@ $year = $_POST['year'] ?? date('Y');
         <!-- Filter Form -->
         <div class="section-container">
             <h3 class="section-title">Generate Report</h3>
-            <form method="POST" action="dashboard.php" class="filter-form">
+            <form id="report-form" method="POST" action="dashboard.php" class="filter-form">
                 <div class="input-group">
                     <label style="margin-right: 10px; font-weight:bold;">Filter By:</label>
-                    <select name="month" required>
+                    <select id="month-select" name="month" required>
                         <?php for ($i = 1; $i <= 12; $i++): ?>
                             <option value="<?= sprintf('%02d', $i) ?>" <?= $i == $month ? 'selected' : '' ?>>
                                 <?= date('F', mktime(0, 0, 0, $i, 1)) ?>
@@ -226,7 +226,7 @@ $year = $_POST['year'] ?? date('Y');
                         <?php endfor; ?>
                     </select>
                     
-                    <select name="year" required>
+                    <select id="year-select" name="year" required>
                         <?php for ($i = 2020; $i <= date('Y'); $i++): ?>
                             <option value="<?= $i ?>" <?= $i == $year ? 'selected' : '' ?>><?= $i ?></option>
                         <?php endfor; ?>
@@ -234,9 +234,9 @@ $year = $_POST['year'] ?? date('Y');
                 </div>
                 
                 <div class="button-group" style="margin-left: auto; display:flex; gap:10px;">
-                    <button type="submit" name="generate_report" class="btn-primary"><i class="fas fa-filter"></i> Generate View</button>
-                    <button type="submit" name="export_pdf" class="btn-pdf"><i class="fas fa-file-pdf"></i> PDF</button>
-                    <button type="submit" name="export_excel" class="btn-excel"><i class="fas fa-file-excel"></i> Excel</button>
+                    <button type="button" name="generate_report" class="btn-primary" onclick="generateReport()"><i class="fas fa-filter"></i> Generate View</button>
+                    <button type="button" name="export_pdf" class="btn-pdf" onclick="exportReportPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+                    <button type="button" name="export_excel" class="btn-excel" onclick="exportReportExcel()"><i class="fas fa-file-excel"></i> Excel</button>
                 </div>
             </form>
         </div>
@@ -325,5 +325,6 @@ $year = $_POST['year'] ?? date('Y');
     </div>
 </div>
 
+<script src="manager.js"></script>
 </body>
 </html>

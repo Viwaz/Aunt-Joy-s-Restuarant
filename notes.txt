@@ -1,27 +1,32 @@
 ** DONE **
--RBAC has been achieved
--the database has been set up
--table for users
--form for logging in is done
--user CRUD functions are up 
--form for registering people is up and running
--Admin Dashboard is up but still needs work
+- RBAC has been achieved
+- the database has been set up
+- table for users
+- form for logging in is done
+- user CRUD functions are up
+- form for registering people is up and running
+- Admin Dashboard is up but still needs work
+- `admin dashboard` - the add meal modal is not working
+- tables in the database for orders,
+- `customer interface` - on the menu interface, it prohibits someone from placing an order unless they have logged in, needs to be removed.
+- `customer orders` - there is need to fix the get orders func, it is accesssing all the orders even for a user, meaning a user can see all orders, not just theirss
+- Interfaces for each kind of user
+- default landing page for unregistered users
+- (admin) - create the toggle function for updating status
 
 ** TO DO **
 - (admin) - add an edit button for updating meals
 - (admin) - add a delete function for users
-- (admin) - create the toggle function for updating status
-- Interfaces for each kind of user
-- tables in the database for orders,
-- default landing page for unregistered users
+
 
 **Observations**
 - so I was looking at some of the methods in the user class, such as create user, reading all/specific data and I realized it means that whenever we create a userObj it has access to all these functionalities, and for a general user (non technical member) it may be wasted resources as they will not use these,Does this mean we have to create a class for each kind of user??
+- thought about a feature where once the status has been updated, it should logged as to who updated it.
 FUNCTIONALITY ISSUES
 - `Session management` - when you have logged in as one user on one tab and try to open an endpoint in another tab, you user session is maintained hence its as though you are browsing using your account even though you may have some other role, e.g admin being able to purchase food
-- `customer orders` - there is need to fix the get orders func, it is accesssing all the orders even for a user, meaning a user can see all orders, not just theirss
--  `customer interface` - on the menu interface, it prohibits someone from placing an order unless they have logged in, needs to be removed.
-- `admin dashboard` - the add meal modal is not working
+
+
+
 
 UI ISSUES
 - Customer interface - Login/logout buttons, cart label
