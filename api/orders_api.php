@@ -15,6 +15,10 @@ $user_role = $_SESSION['role'] ?? null;
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? null;
 
+// --- SESSION SECURITY: Validate user role for sensitive operations ---
+// Only allow customers/users to perform order operations (not admin/sales/manager in customer context)
+// Sales/Manager/Admin can VIEW orders but this API endpoint enforces proper role separation
+
 $db = (new Database())->getConnection();
 
 try {

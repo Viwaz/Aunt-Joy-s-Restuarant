@@ -5,10 +5,20 @@ require_once dirname(__DIR__) . '/includes/Database.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['id'])) {
+    http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'User not logged in']);
     exit;
 }
+
+// --- SESSION SECURITY: Only customers can add to cart ---
 $user_id = $_SESSION['id'];
+$user_role = $_SESSION['role'] ?? null;
+
+if ($user_role !== 'customer') {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Only customers can add items to cart']);
+    exit;
+}
 
 // Read POST data
 $input = json_decode(file_get_contents("php://input"), true);

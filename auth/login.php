@@ -1,17 +1,43 @@
 <?php
 // ... PHP login logic ...
 require_once 'auth.php';
+require_once dirname(__DIR__) . '../includes/Database.php';
+
 $auth = new Auth();
+$warning = null;
+$error = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
+    
+    // --- SESSION SECURITY: Check for role switch warning ---
+    if (isset($_SESSION['id']) && isset($_SESSION['role'])) {
+        // User is already logged in - check if they're trying to login as different role
+        $db = (new Database())->getConnection();
+        $query = "SELECT role FROM users WHERE email = ? LIMIT 1";
+        $stmt = $db->prepare($query);
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            $user_data = $result->fetch_assoc();
+            if ($user_data['role'] !== $_SESSION['role']) {
+                // Different role - show warning
+                $warning = "You are currently logged in as a <strong>" . htmlspecialchars($_SESSION['role']) . 
+                          "</strong>. Logging in as a <strong>" . htmlspecialchars($user_data['role']) . 
+                          "</strong> will log you out from other browser tabs.";
+            }
+        }
+    }
+    
     $role = $auth->login($email, $password);
 
     if ($role) {
         // Merge any pending cart saved in session into the user's DB cart
         if (isset($_SESSION['pending_cart']) && is_array($_SESSION['pending_cart'])) {
-            require_once dirname(__DIR__) . '/includes/Database.php';
+            require_once dirname(__DIR__) . '../includes/Database.php';
             $db = (new Database())->getConnection();
             $user_id = $_SESSION['id'];
 
@@ -72,6 +98,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body class="login-page"> 
     <div class="form-container"> <h2> <strong>Welcome Back!</strong></h2>
         
+        <!-- <?php 
+        // Display warning about role switch
+        if (!empty($warning)) {
+            echo "<div class='message warning' style='color : #ff9800; background: #fff3e0; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #ff9800;'>";
+            echo "⚠️ " . $warning;
+            echo "</div>";
+        }
+        ?>
+         -->
         <form method="POST" id="loginForm">
             <input type="email" name="email" placeholder="Email" required>
             <div class="input-group">
@@ -83,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php 
         // Display PHP error message with the styled class
         if (isset($error)) {
-            echo "<p class='message error' id='errorMessage'>$error</p>"; 
+            echo "<p class='message error'id='errorMessage'>$error</p>"; 
         }
         ?>
 

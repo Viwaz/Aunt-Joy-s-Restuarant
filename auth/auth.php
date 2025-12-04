@@ -20,6 +20,16 @@ class Auth {
         $user = $result->fetch_assoc();
 
         if ($user && password_verify($password, $user['password'])) {
+            // --- SESSION SECURITY: Detect role switch and force clean session ---
+            // If user is already logged in with a different role, destroy old session
+            if (isset($_SESSION['id']) && isset($_SESSION['role'])) {
+                if ($_SESSION['role'] !== $user['role']) {
+                    // Different role detected - destroy old session and start fresh
+                    session_destroy();
+                    session_start();
+                }
+            }
+
             $_SESSION['id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
             return $user['role'];  // return role for redirection

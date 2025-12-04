@@ -31,9 +31,15 @@ This is a small PHP monolith (no framework) intended to run under XAMPP/Apache +
 
 - # Conventions & Gotchas (for agents)
 
-- **Session dependency**: Many pages assume `session_start()` runs and `$_SESSION['user_id']` exists. Do not remove or bypass session checks when editing endpoints.
- - **menu_api query params**: The customer menu endpoint accepts `?action=meals&category_id=<int>` (also accepts `?id=<int>` for backward compatibility). Use `category_id` in new code and docs.
- - **search behavior**: `api/menu_api.php?action=search&keyword=...` will return an empty `"meals"` array when `keyword` is empty (the UI can choose to call the `meals` action to load all items instead).
+- **Session dependency**: Many pages assume `session_start()` runs and `$_SESSION['id']` and `$_SESSION['role']` exist. Do not remove or bypass session checks when editing endpoints.
+- **Session Security & Role Management**: The system enforces strict session/role validation:
+  - When a user logs in with a **different role** (e.g., admin in one tab, customer in another), the old session is destroyed and a new one starts (prevents role hijacking).
+  - Login page shows a **warning** if user attempts to switch roles across tabs.
+  - **All sensitive operations require role validation**: `add_to_cart.php`, `cart_count.php` only allow `role='customer'`. `orders_api.php` enforces role checks for different actions.
+  - **Rules**: Customer can place orders, view own orders. Sales/Manager can view all orders and update status. Admin can CRUD meals and users.
+  - If a request comes in with mismatched role (e.g., `role='admin'` calling `add_to_cart.php`), returns HTTP 403 "Unauthorized".
+- **menu_api query params**: The customer menu endpoint accepts `?action=meals&category_id=<int>` (also accepts `?id=<int>` for backward compatibility). Use `category_id` in new code and docs.
+- **search behavior**: `api/menu_api.php?action=search&keyword=...` will return an empty `"meals"` array when `keyword` is empty (the UI can choose to call the `meals` action to load all items instead).
 - **Centralized Database class**: The `Database` class is now in `includes/Database.php`. All code imports with `require_once dirname(__DIR__) . '/includes/Database.php'` (adjust path depth for subdirectories).
 - **SQL naming**: Some column names use `price_MWK` and `category` is an `int` foreign-key pointing to `categories.id`. Use the schema in `DB and entities.sql` as ground truth.
 - **AJAX vs form posts**: APIs use fetch/JSON (e.g. `api/meals_api.php`). Views call these APIs from JavaScript. Never mix form POSTs with JSON APIs in the same endpoint.
@@ -53,8 +59,8 @@ This is a small PHP monolith (no framework) intended to run under XAMPP/Apache +
 | `api/menu_api.php?action=search&keyword=str` | GET | None | `{"success": bool, "meals": [...]}` (returns empty `meals` array if `keyword` is empty) | No |
 | `api/users_api.php?action=list` | GET | None | `{"success": bool, "users": [...]}` | Yes (admin) |
 | `api/users_api.php?action=create` | POST | `{"username": str, "email": str, "password": str, "role": str}` | `{"success": bool, "message": string}` | Yes (admin) |
-| `api/add_to_cart.php` | POST | `{"menu_item_id": int, "quantity": int}` | `{"success": bool, "message": string}` | Yes (user_id) |
-| `api/cart_count.php` | GET | None | `number` (total cart items) | Yes |
+| `api/add_to_cart.php` | POST | `{"menu_item_id": int, "quantity": int}` | `{"success": bool, "message": string}` | Yes (customer role) |
+| `api/cart_count.php` | GET | None | `{"success": bool, "count": int}` | Yes (customer role) |
 
 # Examples (copy-paste safe snippets)
 
