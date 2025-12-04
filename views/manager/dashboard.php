@@ -93,15 +93,7 @@ class ReportManager {
     public function exportToPDF($report_data, $month, $year) {
         // Use TCPDF to generate a valid PDF file download
         // Try to load TCPDF (via Composer autoload or common locations)
-        // if (!class_exists('TCPDF')) {
-        //     if (file_exists(__DIR__ . '/../../vendor/autoload.php')) {
-        //         require_once __DIR__ . '/../../vendor/autoload.php';
-        //     } elseif (file_exists(__DIR__ . '/../../vendor/tecnickcom/tcpdf/tcpdf.php')) {
-        //         require_once __DIR__ . '/../../vendor/tecnickcom/tcpdf/tcpdf.php';
-        //     } elseif (file_exists(__DIR__ . '/../includes/tcpdf/tcpdf.php')) {
-        //         require_once __DIR__ . '/../includes/tcpdf/tcpdf.php';
-        //     }
-        // }
+
 
         if (!class_exists('TCPDF')) {
             // Helpful fallback message when TCPDF is not installed
