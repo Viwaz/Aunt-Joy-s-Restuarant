@@ -63,14 +63,9 @@
     color: #856404;
 }
 
-.order-status.status-preparing {
+.order-status.status-en-route {
     background: #d1ecf1;
     color: #0c5460;
-}
-
-.order-status.status-out-for-delivery {
-    background: #cfe2ff;
-    color: #084298;
 }
 
 .order-status.status-delivered {
@@ -78,10 +73,7 @@
     color: #0f5132;
 }
 
-.order-status.status-cancelled {
-    background: #f8d7da;
-    color: #842029;
-}
+
 
 .order-body {
     display: flex;
@@ -97,7 +89,7 @@
 
 .btn-view-details {
     padding: 8px 16px;
-    background: #667eea;
+    background: #ff9f43;
     color: white;
     border: none;
     border-radius: 5px;
@@ -108,7 +100,7 @@
 }
 
 .btn-view-details:hover {
-    background: #764ba2;
+    background:  #9e500b;
 }
 
 /* Modal Styles */

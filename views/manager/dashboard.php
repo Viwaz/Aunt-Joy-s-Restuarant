@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__.'/../../auth/auth.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 $auth = new Auth();
 
@@ -90,25 +91,88 @@ class ReportManager {
     }
     
     public function exportToPDF($report_data, $month, $year) {
-        // Simplified PDF export - in real application, use a library like TCPDF
-        $filename = "sales_report_{$month}_{$year}.pdf";
-        header('Content-Type: application/pdf');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        
-        // Generate simple PDF content
-        $content = "Aunt Joy's Restaurant - Sales Report\n";
-        $content .= "For: $month/$year\n\n";
-        $content .= "Summary:\n";
-        $content .= "Total Orders: " . ($report_data['summary']['total_orders'] ?? 0) . "\n";
-        $content .= "Total Revenue: MWK " . number_format($report_data['summary']['total_revenue'] ?? 0, 2) . "\n";
-        $content .= "Average Order Value: MWK " . number_format($report_data['summary']['average_order_value'] ?? 0, 2) . "\n\n";
-        
-        $content .= "Best Selling Items:\n";
-        foreach ($report_data['best_sellers'] as $item) {
-            $content .= $item['meal_name'] . " - " . $item['total_quantity'] . " sold - MWK " . number_format($item['total_revenue'], 2) . "\n";
+        // Use TCPDF to generate a valid PDF file download
+        // Try to load TCPDF (via Composer autoload or common locations)
+        // if (!class_exists('TCPDF')) {
+        //     if (file_exists(__DIR__ . '/../../vendor/autoload.php')) {
+        //         require_once __DIR__ . '/../../vendor/autoload.php';
+        //     } elseif (file_exists(__DIR__ . '/../../vendor/tecnickcom/tcpdf/tcpdf.php')) {
+        //         require_once __DIR__ . '/../../vendor/tecnickcom/tcpdf/tcpdf.php';
+        //     } elseif (file_exists(__DIR__ . '/../includes/tcpdf/tcpdf.php')) {
+        //         require_once __DIR__ . '/../includes/tcpdf/tcpdf.php';
+        //     }
+        // }
+
+        if (!class_exists('TCPDF')) {
+            // Helpful fallback message when TCPDF is not installed
+            header('Content-Type: text/plain; charset=utf-8');
+            echo "TCPDF library not found. Please install it with:\n\ncomposer require tecnickcom/tcpdf\n\nor place the TCPDF library under vendor/ or includes/ and try again.";
+            exit;
         }
-        
-        echo $content;
+
+        // Define TCPDF constants if not defined (safer fallback)
+        if (!defined('PDF_PAGE_ORIENTATION')) define('PDF_PAGE_ORIENTATION', 'P');
+        if (!defined('PDF_UNIT')) define('PDF_UNIT', 'mm');
+        if (!defined('PDF_PAGE_FORMAT')) define('PDF_PAGE_FORMAT', 'A4');
+        if (!defined('PDF_CREATOR')) define('PDF_CREATOR', "Aunt Joy's Restaurant");
+
+        // Create new PDF document
+        /** @var TCPDF $pdf */
+        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+        $pdf->SetCreator(PDF_CREATOR);
+        $pdf->SetAuthor("Aunt Joy's Restaurant");
+        $pdf->SetTitle("Sales Report {$month}/{$year}");
+        $pdf->SetSubject('Sales Report');
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+        $pdf->SetMargins(15, 15, 15);
+        $pdf->SetAutoPageBreak(true, 15);
+        $pdf->AddPage();
+
+        // Build HTML content for PDF
+        $html = '<h1 style="font-family:helvetica;">Aunt Joy\'s Restaurant - Sales Report</h1>';
+        $html .= '<p><strong>For:</strong> ' . htmlspecialchars(date('F Y', mktime(0,0,0,$month,1,$year))) . '</p>';
+
+        $summary = $report_data['summary'] ?? [];
+        $html .= '<h2>Summary</h2>';
+        $html .= '<table border="1" cellpadding="4">'
+              . '<tr><th>Total Orders</th><th>Total Revenue</th><th>Average Order Value</th></tr>'
+              . '<tr><td>' . ($summary['total_orders'] ?? 0) . '</td>'
+              . '<td>MWK ' . number_format($summary['total_revenue'] ?? 0, 2) . '</td>'
+              . '<td>MWK ' . number_format($summary['average_order_value'] ?? 0, 2) . '</td></tr>'
+              . '</table>';
+
+        $html .= '<h2>Best Sellers</h2>';
+        $html .= '<table border="1" cellpadding="4">'
+              . '<tr><th>Rank</th><th>Meal Name</th><th>Qty Sold</th><th>Revenue</th></tr>';
+        foreach ($report_data['best_sellers'] ?? [] as $index => $item) {
+            $html .= '<tr>'
+                  . '<td>' . ($index + 1) . '</td>'
+                  . '<td>' . htmlspecialchars($item['meal_name']) . '</td>'
+                  . '<td>' . ($item['total_quantity'] ?? 0) . '</td>'
+                  . '<td>MWK ' . number_format($item['total_revenue'] ?? 0, 2) . '</td>'
+                  . '</tr>';
+        }
+        $html .= '</table>';
+
+        $html .= '<h2>Daily Trends</h2>';
+        $html .= '<table border="1" cellpadding="4">'
+              . '<tr><th>Date</th><th>Orders</th><th>Revenue</th></tr>';
+        foreach ($report_data['daily_trends'] ?? [] as $day) {
+            $html .= '<tr>'
+                  . '<td>' . htmlspecialchars(date('M d, Y', strtotime($day['sale_date'] ?? ''))) . '</td>'
+                  . '<td>' . ($day['daily_orders'] ?? 0) . '</td>'
+                  . '<td>MWK ' . number_format($day['daily_revenue'] ?? 0, 2) . '</td>'
+                  . '</tr>';
+        }
+        $html .= '</table>';
+
+        // Output HTML content to PDF
+        $pdf->writeHTML($html, true, false, true, false, '');
+
+        // Force download
+        $filename = "sales_report_{$month}_{$year}.pdf";
+        $pdf->Output($filename, 'D');
         exit();
     }
     

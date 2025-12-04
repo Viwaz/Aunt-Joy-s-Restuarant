@@ -23,7 +23,7 @@ $user_id = $_SESSION['id'];
 <div class="cart-container">
     <!-- Sidebar -->
     <div class="sidebar">
-        <a href="customer_interface.php" class="logo">Aunt Joy's</a>
+        <a href="customer_interface.php" class="logo"><h3>Aunt Joy's Customer orders</h3></a>
         <ul>
             <li><a href="customer_interface.php">Menu</a></li>
             <li><a href="cart.php">Cart</a></li>
