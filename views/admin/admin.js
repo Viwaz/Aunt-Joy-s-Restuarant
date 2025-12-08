@@ -1,4 +1,4 @@
-// Modal management
+// ===== MODAL & UI MANAGEMENT =====
 function openModal(modalId) {
     document.getElementById(modalId).style.display = 'flex';
 }
@@ -13,7 +13,6 @@ window.onclick = function(event) {
     }
 }
 
-// Section switching
 function showSection(sectionId) {
     document.getElementById('overview-section').style.display = 'none';
     document.getElementById('meals-section').style.display = 'none';
@@ -25,13 +24,10 @@ function showSection(sectionId) {
     document.querySelector(`.sidebar a[href="#${sectionId}"]`).classList.add('active');
 }
 
-// ===== MEALS API =====
+// ===== MEAL MANAGEMENT =====
 async function loadMeals() {
     try {
-        
-           ;  // /project/path/api/meals_api.php
-        const response = await fetch('../../api/meals_api.php?action=list');
-        const data = await response.json();
+        const data = await ApiClient.getMeals();
 
         if (!data.success) {
             alert('Failed to load meals');
@@ -59,19 +55,15 @@ async function loadMeals() {
                     </button>
                 </td>
                 <td>
-                    <button class="btn-sm btn-delete" onclick="deleteMeal(${meal.id})">Delete</button>
+                    <button class="btn-sm btn-delete" onclick="deleteMeal(${meal.id})">Deactivate</button>
                     <button class="btn-sm btn-edit" onclick="editMeal(${meal.id})">Edit</button>
                 </td>
             `;
             tbody.appendChild(row);
         });
 
-        // Update meal count
-        document.querySelector('#meals-section .section-header h2').textContent = 
-            `Current Menu Items(${data.meals.length})`;
+        document.querySelector('#meals-section .section-header h2').textContent = `Current Menu Items(${data.meals.length})`;
         document.querySelector('#overview-section .stat-card p#total-meals').textContent = `${data.meals.length}`;
-            
-
     } catch (error) {
         console.error('Error loading meals:', error);
         alert('Error loading meals');
@@ -88,30 +80,12 @@ async function addMeal(event) {
     const imageInput = document.getElementById('image');
 
     try {
-        let response;
-        if (imageInput && imageInput.files && imageInput.files.length > 0) {
-            // Use FormData to include file upload
-            const form = new FormData();
-            form.append('name', name);
-            form.append('description', description);
-            form.append('price', price);
-            form.append('category', category);
-            form.append('image', imageInput.files[0]);
-
-            response = await fetch('../../api/meals_api.php?action=create', {
-                method: 'POST',
-                body: form
-            });
-        } else {
-            // Send JSON when no file selected
-            response = await fetch('../../api/meals_api.php?action=create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, description, price, category })
-            });
+        const mealData = { name, description, price, category };
+        if (imageInput?.files?.length > 0) {
+            mealData.image = imageInput.files[0];
         }
 
-        const data = await response.json();
+        const data = await ApiClient.createMeal(mealData);
 
         if (data.success) {
             alert('Meal added successfully!');
@@ -128,38 +102,26 @@ async function addMeal(event) {
 }
 
 async function deleteMeal(mealId) {
-    if (!confirm('Delete this meal?')) return;
+    if (!confirm('Deactivate this meal?')) return;
 
     try {
-        const response = await fetch('../../api/meals_api.php?action=delete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: mealId })
-        });
-
-        const data = await response.json();
+        const data = await ApiClient.deleteMeal(mealId);
 
         if (data.success) {
-            alert('Meal deleted');
+            alert('Meal deactivated');
             loadMeals();
         } else {
             alert('Error: ' + data.message);
         }
     } catch (error) {
-        console.error('Error deleting meal:', error);
-        alert('Error deleting meal');
+        console.error('Error deactivating meal:', error);
+        alert('Error deactivating meal');
     }
 }
 
 async function toggleMealAvailability(mealId, currentStatus) {
     try {
-        const response = await fetch('../../api/meals_api.php?action=toggle', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: mealId, status: currentStatus })
-        });
-
-        const data = await response.json();
+        const data = await ApiClient.toggleMealAvailability(mealId, currentStatus);
 
         if (data.success) {
             loadMeals();
@@ -172,81 +134,14 @@ async function toggleMealAvailability(mealId, currentStatus) {
     }
 }
 
-// ===== USERS API =====
-async function loadUsers() {
-    try {
-        const response = await fetch('../../api/users_api.php?action=list');
-        const data = await response.json();
-
-        if (!data.success) {
-            alert('Failed to load users');
-            return;
-        }
-
-        const tbody = document.querySelector('#users-table tbody');
-        tbody.innerHTML = '';
-
-        data.users.forEach(user => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${escapeHtml(user.username)}</td>
-                <td>${escapeHtml(user.email)}</td>
-                <td><span style="text-transform: capitalize; font-weight:bold; color: #555;">${escapeHtml(user.role)}</span></td>
-                <td>${user.created_at}</td>
-                <td>
-                    <button class="btn-sm btn-delete" onclick="deleteUser(${user.id})">Delete</button>
-                </td>
-            `;
-            tbody.appendChild(row);
-        });
-
-        // Update user count
-        document.querySelector('#users-section .section-header h2').textContent = 
-            `System Users(${data.users.length})`;
-        document.querySelector('#overview-section .stat-card p#total-users').textContent = 
-            `${data.users.length}`;
-
-    } catch (error) {
-        console.error('Error loading users:', error);
-        alert('Error loading users');
-    }
-}
-
-async function deleteUser(userId) {
-    if (!confirm('Deactivate this user? They will no longer be able to login.')) return;
-
-    try {
-        const response = await fetch('../../api/users_api.php?action=delete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: userId })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            alert('User deactivated');
-            loadUsers();
-        } else {
-            alert('Error: ' + data.message);
-        }
-    } catch (error) {
-        console.error('Error deactivating user:', error);
-        alert('Error deactivating user');
-    }
-}
-
-// ===== EDIT MEAL FUNCTIONALITY =====
 async function editMeal(mealId) {
     try {
-        // Find the meal row and extract data from the table
         const rows = document.querySelectorAll('#meals-table tbody tr');
         let mealData = null;
 
         for (let row of rows) {
             const cells = row.querySelectorAll('td');
             if (cells.length >= 6) {
-                // Check if this row has the delete button for our mealId
                 const actionCell = cells[5];
                 const delBtn = actionCell.querySelector('.btn-delete');
                 if (delBtn && delBtn.onclick.toString().includes(mealId)) {
@@ -255,13 +150,7 @@ async function editMeal(mealId) {
                     const priceText = cells[3].innerText.replace('MWK', '').trim();
                     const description = cells[1].innerText.split('\n').slice(1).join('\n') || '';
 
-                    mealData = {
-                        id: mealId,
-                        name: nameFull,
-                        description: description,
-                        price: priceText,
-                        category: categoryName
-                    };
+                    mealData = { id: mealId, name: nameFull, description, price: priceText, category: categoryName };
                     break;
                 }
             }
@@ -272,7 +161,6 @@ async function editMeal(mealId) {
             return;
         }
 
-        // Populate edit form with meal data
         document.getElementById('edit-meal-id').value = mealData.id;
         document.getElementById('edit-name').value = mealData.name;
         document.getElementById('edit-description').value = mealData.description;
@@ -298,31 +186,12 @@ async function saveMealEdit(event) {
     const imageInput = document.getElementById('edit-image');
 
     try {
-        let response;
-        if (imageInput && imageInput.files && imageInput.files.length > 0) {
-            // Use FormData to include file upload
-            const form = new FormData();
-            form.append('id', mealId);
-            form.append('name', name);
-            form.append('description', description);
-            form.append('price', price);
-            form.append('category', category);
-            form.append('image', imageInput.files[0]);
-
-            response = await fetch('../../api/meals_api.php?action=update', {
-                method: 'POST',
-                body: form
-            });
-        } else {
-            // Send JSON when no file selected
-            response = await fetch('../../api/meals_api.php?action=update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: mealId, name, description, price, category })
-            });
+        const mealData = { id: mealId, name, description, price, category };
+        if (imageInput?.files?.length > 0) {
+            mealData.image = imageInput.files[0];
         }
 
-        const data = await response.json();
+        const data = await ApiClient.updateMeal(mealData);
 
         if (data.success) {
             alert('Meal updated successfully!');
@@ -338,6 +207,41 @@ async function saveMealEdit(event) {
     }
 }
 
+// ===== USER MANAGEMENT =====
+async function loadUsers() {
+    try {
+        const data = await ApiClient.getUsers();
+
+        if (!data.success) {
+            alert('Failed to load users');
+            return;
+        }
+
+        const tbody = document.querySelector('#users-table tbody');
+        tbody.innerHTML = '';
+
+        data.users.forEach(user => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${escapeHtml(user.username)}</td>
+                <td>${escapeHtml(user.email)}</td>
+                <td><span style="text-transform: capitalize; font-weight:bold; color: #555;">${escapeHtml(user.role)}</span></td>
+                <td>${user.created_at}</td>
+                <td>
+                    <button class="btn-sm btn-delete" onclick="deleteUser(${user.id})">Deactivate</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        document.querySelector('#users-section .section-header h2').textContent = `System Users(${data.users.length})`;
+        document.querySelector('#overview-section .stat-card p#total-users').textContent = `${data.users.length}`;
+    } catch (error) {
+        console.error('Error loading users:', error);
+        alert('Error loading users');
+    }
+}
+
 async function addUser(event) {
     event.preventDefault();
 
@@ -347,13 +251,7 @@ async function addUser(event) {
     const role = document.getElementById('role').value;
 
     try {
-        const response = await fetch('../../api/users_api.php?action=create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, email, password, role })
-        });
-
-        const data = await response.json();
+        const data = await ApiClient.createUser({ username, email, password, role });
 
         if (data.success) {
             alert('User created successfully!');
@@ -369,19 +267,31 @@ async function addUser(event) {
     }
 }
 
-// Utility
+async function deleteUser(userId) {
+    if (!confirm('Deactivate this user? They will no longer be able to login.')) return;
+
+    try {
+        const data = await ApiClient.deleteUser(userId);
+
+        if (data.success) {
+            alert('User deactivated');
+            loadUsers();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error deactivating user:', error);
+        alert('Error deactivating user');
+    }
+}
+
+// ===== UTILITY =====
 function escapeHtml(text) {
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    };
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
     return text.replace(/[&<>"']/g, m => map[m]);
 }
 
-// Load data on page load
+// ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
     loadMeals();
     loadUsers();

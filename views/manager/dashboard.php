@@ -381,6 +381,7 @@ $year = $_POST['year'] ?? date('Y');
     </div>
 </div>
 
+<script src="api-client.js"></script>
 <script src="manager.js"></script>
 </body>
 </html>

@@ -1,20 +1,17 @@
-// Utility function to escape HTML
+// ===== UTILITY =====
 function escapeHtml(text) {
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    };
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
     return text.replace(/[&<>"']/g, m => map[m]);
 }
 
-// Load categories on page load
+function number_format(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+// ===== CATEGORY MANAGEMENT =====
 async function loadCategories() {
     try {
-        const response = await fetch('../../../api/menu_api.php?action=categories');
-        const data = await response.json();
+        const data = await ApiClient.getCategories();
 
         if (!data.success) {
             console.error('Failed to load categories');
@@ -47,16 +44,10 @@ function updateActiveCategory(element) {
     element.classList.add('active');
 }
 
-// Load meals by category or all
+// ===== MEAL LOADING & RENDERING =====
 async function loadMeals(categoryId = null) {
     try {
-        let url = '../../../api/menu_api.php?action=meals';
-        if (categoryId) {
-            url += '&category_id=' + categoryId;
-        }
-
-        const response = await fetch(url);
-        const data = await response.json();
+        const data = await ApiClient.getMeals(categoryId);
 
         if (!data.success) {
             alert('Failed to load meals');
@@ -71,22 +62,7 @@ async function loadMeals(categoryId = null) {
             return;
         }
 
-        data.meals.forEach(meal => {
-            const card = document.createElement('div');
-            card.className = 'meal-card';
-            card.innerHTML = `
-                <img src="../../../menu/${escapeHtml(meal.image || 'placeholder.jpg')}" alt="${escapeHtml(meal.name)}" class="meal-img">
-                <h3>${escapeHtml(meal.name)}</h3>
-                <p class="meal-desc">${escapeHtml(meal.description)}</p>
-                <p class="meal-category"><small>${escapeHtml(meal.category_name)}</small></p>
-                <p class="meal-price">MWK ${number_format(meal.price_MWK)}</p>
-                <div class="meal-actions">
-                    <input type="number" class="qty-input" value="1" min="1" max="10" id="qty-${meal.id}">
-                    <button class="btn-add-cart" onclick="addToCart(${meal.id})">Add to Cart</button>
-                </div>
-            `;
-            mealsContainer.appendChild(card);
-        });
+        data.meals.forEach(meal => renderMealCard(meal, mealsContainer));
 
     } catch (error) {
         console.error('Error loading meals:', error);
@@ -94,7 +70,24 @@ async function loadMeals(categoryId = null) {
     }
 }
 
-// Search meals
+function renderMealCard(meal, container) {
+    const card = document.createElement('div');
+    card.className = 'meal-card';
+    card.innerHTML = `
+        <img src="../../../menu/${escapeHtml(meal.image || 'placeholder.jpg')}" alt="${escapeHtml(meal.name)}" class="meal-img">
+        <h3>${escapeHtml(meal.name)}</h3>
+        <p class="meal-desc">${escapeHtml(meal.description)}</p>
+        <p class="meal-category"><small>${escapeHtml(meal.category_name)}</small></p>
+        <p class="meal-price">MWK ${number_format(meal.price_MWK)}</p>
+        <div class="meal-actions">
+            <input type="number" class="qty-input" value="1" min="1" max="10" id="qty-${meal.id}">
+            <button class="btn-add-cart" onclick="addToCart(${meal.id})">Add to Cart</button>
+        </div>
+    `;
+    container.appendChild(card);
+}
+
+// ===== SEARCH =====
 async function searchMeals(event) {
     event.preventDefault();
 
@@ -106,8 +99,7 @@ async function searchMeals(event) {
     }
 
     try {
-        const response = await fetch(`../../../api/menu_api.php?action=search&keyword=${encodeURIComponent(keyword)}`);
-        const data = await response.json();
+        const data = await ApiClient.searchMeals(keyword);
 
         if (!data.success) {
             alert('Search failed');
@@ -122,22 +114,7 @@ async function searchMeals(event) {
             return;
         }
 
-        data.meals.forEach(meal => {
-            const card = document.createElement('div');
-            card.className = 'meal-card';
-            card.innerHTML = `
-                <img src="../../../menu/${escapeHtml(meal.image || 'placeholder.jpg')}" alt="${escapeHtml(meal.name)}" class="meal-img">
-                <h3>${escapeHtml(meal.name)}</h3>
-                <p class="meal-desc">${escapeHtml(meal.description)}</p>
-                <p class="meal-category"><small>${escapeHtml(meal.category_name)}</small></p>
-                <p class="meal-price">MWK ${number_format(meal.price_MWK)}</p>
-                <div class="meal-actions">
-                    <input type="number" class="qty-input" value="1" min="1" max="10" id="qty-${meal.id}">
-                    <button class="btn-add-cart" onclick="addToCart(${meal.id})">Add to Cart</button>
-                </div>
-            `;
-            mealsContainer.appendChild(card);
-        });
+        data.meals.forEach(meal => renderMealCard(meal, mealsContainer));
 
     } catch (error) {
         console.error('Error searching meals:', error);
@@ -145,18 +122,12 @@ async function searchMeals(event) {
     }
 }
 
-// Add meal to cart
+// ===== CART MANAGEMENT =====
 async function addToCart(mealId) {
     const quantity = parseInt(document.getElementById(`qty-${mealId}`).value) || 1;
 
     try {
-        const response = await fetch('../../../api/add_to_cart.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ menu_item_id: mealId, quantity })
-        });
-
-        const data = await response.json();
+        const data = await ApiClient.addToCart(mealId, quantity);
 
         if (data.success) {
             alert('Item added to cart!');
@@ -170,23 +141,16 @@ async function addToCart(mealId) {
     }
 }
 
-// Update cart count in header
 async function updateCartCount() {
     try {
-        const response = await fetch('../../../api/cart_count.php');
-        const data = await response.json();
+        const data = await ApiClient.getCartCount();
         document.getElementById('cart-count').textContent = data.count || '0';
     } catch (error) {
         console.error('Error updating cart count:', error);
     }
 }
 
-// Format number with thousands separator
-function number_format(num) {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-}
-
-// Load on page load
+// ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
     loadCategories();
     loadMeals();

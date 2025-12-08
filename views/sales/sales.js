@@ -1,10 +1,10 @@
 let allOrders = [];
 let selectedOrderId = null;
 
+// ===== ORDER MANAGEMENT =====
 async function loadOrders() {
     try {
-        const response = await fetch('../../api/orders_api.php?action=list');
-        const data = await response.json();
+        const data = await ApiClient.listOrders();
 
         if (!data.success) {
             alert('Failed to load orders');
@@ -65,13 +65,7 @@ function renderOrders(orders) {
 
 function filterOrders() {
     const filterValue = document.getElementById('status-filter').value;
-    
-    if (filterValue === '') {
-        renderOrders(allOrders);
-    } else {
-        const filtered = allOrders.filter(o => o.status === filterValue);
-        renderOrders(filtered);
-    }
+    renderOrders(filterValue === '' ? allOrders : allOrders.filter(o => o.status === filterValue));
 }
 
 function viewOrderDetails(orderId) {
@@ -126,13 +120,7 @@ async function updateOrderStatus() {
     }
 
     try {
-        const response = await fetch('../../api/orders_api.php?action=update_status', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ order_id: selectedOrderId, status: newStatus })
-        });
-
-        const data = await response.json();
+        const data = await ApiClient.updateOrderStatus(selectedOrderId, newStatus);
 
         if (data.success) {
             alert('Order status updated successfully');
@@ -152,11 +140,13 @@ function closeModal() {
     selectedOrderId = null;
 }
 
+// ===== UTILITY =====
 function escapeHtml(text) {
     const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
     return text.replace(/[&<>"']/g, m => map[m]);
 }
 
+// ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', loadOrders);
 document.addEventListener('click', (e) => {
     if (e.target.id === 'order-detail-modal') closeModal();

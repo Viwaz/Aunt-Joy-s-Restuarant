@@ -73,6 +73,7 @@ $auth = new Auth();
     </div>
 </div>
 
+<script src="../api-client.js"></script>
 <script src="../scripts/customer.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -1,5 +1,5 @@
 <?php
-    require_once __DIR__.'/../../auth/auth.php';
+require_once __DIR__.'/../../auth/auth.php';
 require_once  __DIR__.'/../../includes/Database.php';
 
 $auth = new Auth();
@@ -235,6 +235,7 @@ $username = $result ? $result->username : 'Admin';
         </form>
     </div>
 </div>
+<script src="api-client.js"></script>
 <script src="admin.js"></script>
 </body>
 </html>

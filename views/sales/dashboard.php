@@ -74,6 +74,7 @@ if (!$auth->isLoggedIn() || $_SESSION['role'] !== 'sales') {
     </div>
 </div>
 
+<script src="api-client.js"></script>
 <script src="sales.js"></script>
 </body>
 </html>
