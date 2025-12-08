@@ -1,66 +1,112 @@
 <?php
 require_once 'database.php';
-/**
- * User class handles all user-related operations
- * it interacts with the 'users' table in the database
- * it provides methods for creating, reading, updating, and deleting users by the admin/ users as well
- */
+require_once 'AuditLog.php';
 
-class User{
-    // database connection and table name
+class User {
     private $conn;
-    private $table = "users";
+    private $table = 'users';
 
-    public function __construct($db){
+    public function __construct($db) {
         $this->conn = $db;
     }
 
+    public function create($username, $email, $password, $role = 'customer', $performed_by = null, $ip_address = null) {
+        $query = "INSERT INTO {$this->table} (username, email, password, role) VALUES (?, ?, ?, ?)";
+        $stmt = $this->conn->prepare($query);
+        if (!$stmt) return false;
 
-    public function create($user, $email,$password, $role = 'customer'){
-    /**Function for creating users
-     * parameters:
-     *  - username, - email, - password
-     * these are captured when the user clicks 'register'
-     * */
-        $query = "INSERT INTO $this->table(username, email, password, role)
-                  VALUES (?,?,?,?)";
-        $insert  = $this->conn->prepare($query);
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
-        // assigning(binding) the values to the corresponding placeholders in the query
-        $insert->bind_param("ssss", $user, $email, $password_hash, $role);
-        return $insert->execute();
+        $stmt->bind_param('ssss', $username, $email, $password_hash, $role);
+        $res = $stmt->execute();
+        if ($res) {
+            $new_id = $this->conn->insert_id;
+            // Log creation
+            $audit = new AuditLog($this->conn);
+            $new_values = ['username' => $username, 'email' => $email, 'role' => $role];
+            $ip = $ip_address ?? ($_SERVER['REMOTE_ADDR'] ?? null);
+            $audit->log('CREATE', 'user', $new_id, $performed_by, "User created: $username", null, $new_values, $ip);
+        }
+        $stmt->close();
+        return (bool)$res;
     }
 
-    public function readAll(){
-        /**FUNCTION FOR VIEWING USERS
-         *- reads all users present in the database
-         *
-         */
-        $readAll = $this->conn->prepare("SELECT * FROM $this->table ORDER BY id DESC");
-        $readAll->execute();
-        $result = $readAll->get_result();
-        return $result ;
+    public function readAll($include_inactive = false) {
+        if ($include_inactive) {
+            $query = "SELECT * FROM $this->table ORDER BY id DESC";
+            $result = $this->conn->query($query);
+            return $result;
+        }
+        $stmt = $this->conn->prepare("SELECT * FROM $this->table WHERE is_active = 1 ORDER BY id DESC");
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $stmt->close();
+        return $res;
     }
 
-    public function update($username,$email,$role,$id){
-        /**FUNCTION FOR UPDATING USER DETAILS
-         * -allows for update of values excluding the password and Id
-         */
-        $query = "UPDATE $this->table SET username = ?, email = ?, role = ? WHERE id = ?";
+    public function read($id, $include_inactive = false) {
+        if ($include_inactive) {
+            $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE id = ? LIMIT 1");
+        } else {
+            $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE id = ? AND is_active = 1 LIMIT 1");
+        }
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $stmt->close();
+        return $res;
+    }
+
+    public function update($username, $email, $role, $id, $performed_by = null, $ip_address = null) {
+        // fetch old values for audit
+        $stmt = $this->conn->prepare("SELECT username, email, role FROM {$this->table} WHERE id = ? LIMIT 1");
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $old = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        $query = "UPDATE {$this->table} SET username = ?, email = ?, role = ? WHERE id = ?";
         $update = $this->conn->prepare($query);
-        $update ->bind_param('sssi', $username,$email,$role,$id);
-        return $update->execute;
-
+        if (!$update) return false;
+        $update->bind_param('sssi', $username, $email, $role, $id);
+        $res = $update->execute();
+        if ($res) {
+            $audit = new AuditLog($this->conn);
+            $old_values = $old;
+            $new_values = ['username' => $username, 'email' => $email, 'role' => $role];
+            $ip = $ip_address ?? ($_SERVER['REMOTE_ADDR'] ?? null);
+            $audit->log('UPDATE', 'user', $id, $performed_by, "User updated: {$username}", $old_values, $new_values, $ip);
+        }
+        $update->close();
+        return (bool)$res;
     }
 
-    public function delete($id) {
-        $query = "DELETE FROM $this->table WHERE id=?";
-        $delete = $this->conn->prepare($query);
-        $delete->bind_param("i", $id);
-        return $delete->execute();
+    public function delete($id, $performed_by = null, $ip_address = null) {
+        // Soft delete: set is_active = 0
+        $stmt = $this->conn->prepare("SELECT username, email, role, is_active FROM {$this->table} WHERE id = ? LIMIT 1");
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $user = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (!$user) return false;
+        if (isset($user['is_active']) && $user['is_active'] == 0) {
+            // already deactivated
+            return true;
+        }
+
+        $query = "UPDATE {$this->table} SET is_active = 0 WHERE id = ?";
+        $upd = $this->conn->prepare($query);
+        if (!$upd) return false;
+        $upd->bind_param('i', $id);
+        $res = $upd->execute();
+        if ($res) {
+            $audit = new AuditLog($this->conn);
+            $old_values = ['is_active' => 1];
+            $new_values = ['is_active' => 0];
+            $ip = $ip_address ?? ($_SERVER['REMOTE_ADDR'] ?? null);
+            $audit->log('DEACTIVATE', 'user', $id, $performed_by, "User deactivated: " . ($user['username'] ?? $id), $old_values, $new_values, $ip);
+        }
+        $upd->close();
+        return (bool)$res;
     }
 }
-
-
-
-?>

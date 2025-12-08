@@ -60,7 +60,7 @@ async function loadMeals() {
                 </td>
                 <td>
                     <button class="btn-sm btn-delete" onclick="deleteMeal(${meal.id})">Delete</button>
-                    <button class="btn-sm btn-edit" onclick ="openModal('editMealModal')">Edit</button>
+                    <button class="btn-sm btn-edit" onclick="editMeal(${meal.id})">Edit</button>
                 </td>
             `;
             tbody.appendChild(row);
@@ -85,14 +85,31 @@ async function addMeal(event) {
     const description = document.getElementById("description").value;
     const price = document.getElementById("price").value;
     const category = document.getElementById("category").value;
-    const image = document.getElementById("image").value;
-    
+    const imageInput = document.getElementById('image');
+
     try {
-        const response = await fetch('../../api/meals_api.php?action=create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, description, price, category, image })
-        });
+        let response;
+        if (imageInput && imageInput.files && imageInput.files.length > 0) {
+            // Use FormData to include file upload
+            const form = new FormData();
+            form.append('name', name);
+            form.append('description', description);
+            form.append('price', price);
+            form.append('category', category);
+            form.append('image', imageInput.files[0]);
+
+            response = await fetch('../../api/meals_api.php?action=create', {
+                method: 'POST',
+                body: form
+            });
+        } else {
+            // Send JSON when no file selected
+            response = await fetch('../../api/meals_api.php?action=create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, description, price, category })
+            });
+        }
 
         const data = await response.json();
 
@@ -177,8 +194,7 @@ async function loadUsers() {
                 <td><span style="text-transform: capitalize; font-weight:bold; color: #555;">${escapeHtml(user.role)}</span></td>
                 <td>${user.created_at}</td>
                 <td>
-                    <button class="btn-sm btn-delete" disabled>Delete</button>
-                    <button class="btn-sm btn-edit" disabled>Edit</button>
+                    <button class="btn-sm btn-delete" onclick="deleteUser(${user.id})">Delete</button>
                 </td>
             `;
             tbody.appendChild(row);
@@ -193,6 +209,132 @@ async function loadUsers() {
     } catch (error) {
         console.error('Error loading users:', error);
         alert('Error loading users');
+    }
+}
+
+async function deleteUser(userId) {
+    if (!confirm('Deactivate this user? They will no longer be able to login.')) return;
+
+    try {
+        const response = await fetch('../../api/users_api.php?action=delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: userId })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('User deactivated');
+            loadUsers();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error deactivating user:', error);
+        alert('Error deactivating user');
+    }
+}
+
+// ===== EDIT MEAL FUNCTIONALITY =====
+async function editMeal(mealId) {
+    try {
+        // Find the meal row and extract data from the table
+        const rows = document.querySelectorAll('#meals-table tbody tr');
+        let mealData = null;
+
+        for (let row of rows) {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 6) {
+                // Check if this row has the delete button for our mealId
+                const actionCell = cells[5];
+                const delBtn = actionCell.querySelector('.btn-delete');
+                if (delBtn && delBtn.onclick.toString().includes(mealId)) {
+                    const nameFull = cells[1].innerText.split('\n')[0];
+                    const categoryName = cells[2].innerText;
+                    const priceText = cells[3].innerText.replace('MWK', '').trim();
+                    const description = cells[1].innerText.split('\n').slice(1).join('\n') || '';
+
+                    mealData = {
+                        id: mealId,
+                        name: nameFull,
+                        description: description,
+                        price: priceText,
+                        category: categoryName
+                    };
+                    break;
+                }
+            }
+        }
+
+        if (!mealData) {
+            alert('Could not load meal details');
+            return;
+        }
+
+        // Populate edit form with meal data
+        document.getElementById('edit-meal-id').value = mealData.id;
+        document.getElementById('edit-name').value = mealData.name;
+        document.getElementById('edit-description').value = mealData.description;
+        document.getElementById('edit-price').value = mealData.price;
+        document.getElementById('edit-category').value = mealData.category;
+        document.getElementById('edit-image').value = '';
+
+        openModal('editMealModal');
+    } catch (error) {
+        console.error('Error loading meal for edit:', error);
+        alert('Error loading meal details');
+    }
+}
+
+async function saveMealEdit(event) {
+    event.preventDefault();
+
+    const mealId = document.getElementById('edit-meal-id').value;
+    const name = document.getElementById('edit-name').value;
+    const description = document.getElementById('edit-description').value;
+    const price = document.getElementById('edit-price').value;
+    const category = document.getElementById('edit-category').value;
+    const imageInput = document.getElementById('edit-image');
+
+    try {
+        let response;
+        if (imageInput && imageInput.files && imageInput.files.length > 0) {
+            // Use FormData to include file upload
+            const form = new FormData();
+            form.append('id', mealId);
+            form.append('name', name);
+            form.append('description', description);
+            form.append('price', price);
+            form.append('category', category);
+            form.append('image', imageInput.files[0]);
+
+            response = await fetch('../../api/meals_api.php?action=update', {
+                method: 'POST',
+                body: form
+            });
+        } else {
+            // Send JSON when no file selected
+            response = await fetch('../../api/meals_api.php?action=update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: mealId, name, description, price, category })
+            });
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('Meal updated successfully!');
+            closeModal('editMealModal');
+            document.getElementById('editMealForm').reset();
+            loadMeals();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error updating meal:', error);
+        alert('Error updating meal');
     }
 }
 

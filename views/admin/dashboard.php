@@ -13,7 +13,7 @@ if (!$auth->isLoggedIn() || !$auth->checkRole('admin')) {
 $db = (new Database())->getConnection();
 $query = "SELECT username FROM users WHERE id = ?";
 $stmt = $db->prepare($query);
-$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->bind_param("i", $_SESSION['id']);
 $stmt->execute();
 $result = $stmt->get_result()->fetch_object();
 $username = $result ? $result->username : 'Admin';
@@ -159,7 +159,7 @@ $username = $result ? $result->username : 'Admin';
             </div>
             <div class="form-group">
                 <label>Image</label>
-                <input type="file" id ="image" name="image">
+                <input type="file" id ="image" name="image" required>
             </div>
             <button type="submit" class="btn-primary" style="width:100%;">Save Meal</button>
         </form>
@@ -199,14 +199,42 @@ $username = $result ? $result->username : 'Admin';
 </div>
 
 <!-- Edit Meal Modal -->
- <div id="editMealModal" class="modal">
+<div id="editMealModal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal('editMealModal')">&times;</span>
-        <h2>Edit Meal (Coming Soon)</h2>
-        <p>This feature is under development.</p>
+        <h2>Edit Meal</h2>
+        <form id="editMealForm" onsubmit="saveMealEdit(event)" enctype="multipart/form-data">
+            <input type="hidden" id="edit-meal-id" name="meal_id">
+            <div class="form-group">
+                <label>Meal Name</label>
+                <input type="text" id="edit-name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="edit-description" name="description" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Price (MK)</label>
+                <input type="number" id="edit-price" name="price" required>
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select id="edit-category" name="category" required>
+                    <option value="Breakfast">Breakfast</option>
+                    <option value="Lunch">Lunch</option>
+                    <option value="Dinner">Dinner</option>
+                    <option value="Drinks">Drinks</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Image</label>
+                <input type="file" id="edit-image" name="image">
+                <small style="color:#888;">Leave blank to keep current image</small>
+            </div>
+            <button type="submit" class="btn-primary" style="width:100%;">Save Changes</button>
+        </form>
     </div>
-
- </div>
+</div>
 <script src="admin.js"></script>
 </body>
 </html>

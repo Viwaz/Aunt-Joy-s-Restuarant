@@ -20,6 +20,12 @@ class Auth {
         $user = $result->fetch_assoc();
 
         if ($user && password_verify($password, $user['password'])) {
+            // --- SOFT DELETION CHECK: Verify user account is active ---
+            if (!isset($user['is_active']) || $user['is_active'] == 0) {
+                // Account has been deactivated
+                return 'deactivated';  // Return special status to indicate deactivated account
+            }
+
             // --- SESSION SECURITY: Detect role switch and force clean session ---
             // If user is already logged in with a different role, destroy old session
             if (isset($_SESSION['id']) && isset($_SESSION['role'])) {

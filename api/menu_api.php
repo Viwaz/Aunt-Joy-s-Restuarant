@@ -22,9 +22,9 @@ try {
         $category_id = $_GET['category_id'] ?? $_GET['id'] ?? null;
 
         $query = "SELECT m.*, c.category_name as category_name 
-                  FROM menu_items m 
-                  LEFT JOIN categories c ON m.category = c.id 
-                  WHERE m.availability = 'in_stock'";
+              FROM menu_items m 
+              LEFT JOIN categories c ON m.category = c.id 
+              WHERE m.availability = 'in_stock' AND m.is_active = 1";
 
         if ($category_id) {
             $query .= " AND m.category = ?";
@@ -52,11 +52,11 @@ try {
         }
 
         $query = "SELECT m.*, c.category_name as category_name 
-                  FROM menu_items m 
-                  LEFT JOIN categories c ON m.category = c.id 
-                  WHERE m.availability = 'in_stock' 
-                  AND (m.name LIKE ? OR m.description LIKE ?) 
-                  ORDER BY m.name";
+              FROM menu_items m 
+              LEFT JOIN categories c ON m.category = c.id 
+              WHERE m.availability = 'in_stock' AND m.is_active = 1
+              AND (m.name LIKE ? OR m.description LIKE ?) 
+              ORDER BY m.name";
 
         $stmt = $db->prepare($query);
         $keyword = "%$keyword%";

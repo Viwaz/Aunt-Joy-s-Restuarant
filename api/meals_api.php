@@ -35,7 +35,13 @@ try {
 
     } elseif ($method === 'POST' && $action === 'create') {
         // Add new meal
-        $input = json_decode(file_get_contents('php://input'), true);
+        // Accept JSON body or form-encoded POST (for file uploads)
+        $raw = file_get_contents('php://input');
+        $input = json_decode($raw, true);
+        if (empty($input) && !empty($_POST)) {
+            $input = $_POST;
+        }
+
         $name = $input['name'] ?? null;
         $description = $input['description'] ?? null;
         $price = $input['price'] ?? null;
@@ -47,17 +53,21 @@ try {
             exit;
         }
 
-        // Handle image upload
+        // Handle image upload (FormData) or fallback to provided image name
         $image = 'default_food.png';
-        if (isset($_FILES['image']) && $_FILES['image']['size'] > 0) {
-            $target_dir =  '../menu/';
+        if (!empty($_FILES['image']) && $_FILES['image']['size'] > 0) {
+            // Handle file upload from FormData
+            $target_dir = '../menu/';
             if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
             $image = basename($_FILES['image']['name']);
             move_uploaded_file($_FILES['image']['tmp_name'], $target_dir . $image);
+        } elseif (!empty($input['image'])) {
+            // allow clients to provide an image filename
+            $image = $input['image'];
         }
 
-        if ($mealObj->create($name, $description, $price, $category, $image)) {
-            echo json_encode(['success' => true, 'message' => 'Meal created successfully']);
+        if ($mealObj->create($name, $description, $price, $category, $image, $_SESSION['id'], $_SERVER['REMOTE_ADDR'] ?? null)) {
+            echo json_encode(['success' => true, 'message' => 'Meal created successfully', 'image' => $image]);
         } else {
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => 'Failed to create meal']);
@@ -74,11 +84,48 @@ try {
             exit;
         }
 
-        if ($mealObj->delete($meal_id)) {
-            echo json_encode(['success' => true, 'message' => 'Meal deleted']);
+        if ($mealObj->delete($meal_id, $_SESSION['id'], $_SERVER['REMOTE_ADDR'] ?? null)) {
+            echo json_encode(['success' => true, 'message' => 'Meal deactivated']);
         } else {
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => 'Failed to delete meal']);
+        }
+
+    } elseif ($method === 'POST' && $action === 'update') {
+        // Update meal details
+        // Accept JSON body or form-encoded POST (for file uploads)
+        $raw = file_get_contents('php://input');
+        $input = json_decode($raw, true);
+        if (empty($input) && !empty($_POST)) {
+            $input = $_POST;
+        }
+
+        $meal_id = $input['id'] ?? null;
+        $name = $input['name'] ?? null;
+        $description = $input['description'] ?? null;
+        $price = $input['price'] ?? null;
+        $category_name = $input['category'] ?? null;
+
+        if (!$meal_id || !$name || !$price || !$category_name) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Missing required fields']);
+            exit;
+        }
+
+        // Handle image upload (optional)
+        $image = null;
+        if (!empty($_FILES['image']) && $_FILES['image']['size'] > 0) {
+            $target_dir = '../menu/';
+            if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
+            $image = basename($_FILES['image']['name']);
+            move_uploaded_file($_FILES['image']['tmp_name'], $target_dir . $image);
+        }
+
+        if ($mealObj->update($meal_id, $name, $description, $price, $category_name, $image, $_SESSION['id'], $_SERVER['REMOTE_ADDR'] ?? null)) {
+            echo json_encode(['success' => true, 'message' => 'Meal updated successfully']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Failed to update meal']);
         }
 
     } elseif ($method === 'POST' && $action === 'toggle') {
@@ -94,7 +141,7 @@ try {
         }
 
         $new_status = ($current_status === 'in_stock') ? 'out_of_stock' : 'in_stock';
-        if ($mealObj->toggleAvailability($meal_id, $current_status)) {
+        if ($mealObj->toggleAvailability($meal_id, $current_status, $_SESSION['id'], $_SERVER['REMOTE_ADDR'] ?? null)) {
             echo json_encode(['success' => true, 'status' => $new_status]);
         } else {
             http_response_code(500);

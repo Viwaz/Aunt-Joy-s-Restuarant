@@ -49,6 +49,12 @@ create table order_itmes(
 );
 rename table order_itmes to order_items;
 
+--  Add is_active column to users table
+ALTER TABLE users ADD COLUMN is_active TINYINT(1) DEFAULT 1 AFTER role;
+
+-- Add is_active column to menu_items table
+ALTER TABLE menu_items ADD COLUMN is_active TINYINT(1) DEFAULT 1 AFTER availability;
+
 create table cart(
 	id INT AUTO_INCREMENT PRIMARY KEY,
     user_id int,
@@ -64,6 +70,19 @@ create table categories(
 );
 INSERT INTO categories(category_name) VALUES
 ('Breakfast'),('Lunch'),('Dinner'),('Drinks');
+
+CREATE TABLE IF NOT EXISTS audit_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    action VARCHAR(50) NOT NULL,                -- e.g., 'CREATE', 'UPDATE', 'DELETE', 'DEACTIVATE'
+    entity_type VARCHAR(50) NOT NULL,            -- e.g., 'user', 'meal', 'order'
+    entity_id INT NOT NULL,                      -- ID of the affected record
+    performed_by INT,                            -- user_id of who performed the action (NULL if system)
+    description TEXT,                            -- Additional details (JSON or free text)
+    old_values JSON,                             -- Previous values (for updates/deletes)
+    new_values JSON,                             -- New values (for creates/updates)
+    ip_address VARCHAR(45),                      -- IP address of requester
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 replace menu_items(id,name,description,price_MWK,image,category) 
 VALUES(1, 'Beef Fried Rice', 'Tastey bomb of flavours ready to explode',6000, 'Beef fried rice.jpg',2 );

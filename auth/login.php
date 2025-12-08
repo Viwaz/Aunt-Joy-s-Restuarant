@@ -34,7 +34,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     $role = $auth->login($email, $password);
 
-    if ($role) {
+    if ($role === 'deactivated') {
+        // Account has been deactivated
+        $error = "⚠️ <strong>Account Deactivated</strong><br>Your account has been deactivated. Please contact support for more information.";
+    } elseif ($role) {
         // Merge any pending cart saved in session into the user's DB cart
         if (isset($_SESSION['pending_cart']) && is_array($_SESSION['pending_cart'])) {
             require_once dirname(__DIR__) . '../includes/Database.php';
