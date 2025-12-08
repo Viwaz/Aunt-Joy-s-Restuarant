@@ -7,6 +7,14 @@ if (!$auth->isLoggedIn()) {
     exit;
 }
 
+// --- SECURITY: Only customers can view their own orders ---
+if ($_SESSION['role'] !== 'customer') {
+    echo "Access Denied. Redirecting to login page...";
+    sleep(3);
+    header("Location: ../../../auth/login.php");
+    exit;
+}
+
 $user_id = $_SESSION['id'];
 ?>
 <!DOCTYPE html>

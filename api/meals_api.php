@@ -45,9 +45,9 @@ try {
         $name = $input['name'] ?? null;
         $description = $input['description'] ?? null;
         $price = $input['price'] ?? null;
-        $category = $input['category'] ?? null;
+        $category_id = $input['category'] ?? null;
 
-        if (!$name || !$price || !$category) {
+        if (!$name || !$price || !$category_id) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Missing required fields']);
             exit;
@@ -66,7 +66,7 @@ try {
             $image = $input['image'];
         }
 
-        if ($mealObj->create($name, $description, $price, $category, $image, $_SESSION['id'], $_SERVER['REMOTE_ADDR'] ?? null)) {
+        if ($mealObj->create($name, $description, $price, $category_id, $image, $_SESSION['id'], $_SERVER['REMOTE_ADDR'] ?? null)) {
             echo json_encode(['success' => true, 'message' => 'Meal created successfully', 'image' => $image]);
         } else {
             http_response_code(500);
@@ -104,9 +104,9 @@ try {
         $name = $input['name'] ?? null;
         $description = $input['description'] ?? null;
         $price = $input['price'] ?? null;
-        $category_name = $input['category'] ?? null;
+        $category_id = $input['category'] ?? null;
 
-        if (!$meal_id || !$name || !$price || !$category_name) {
+        if (!$meal_id || !$name || !$price || !$category_id) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Missing required fields']);
             exit;
@@ -121,7 +121,7 @@ try {
             move_uploaded_file($_FILES['image']['tmp_name'], $target_dir . $image);
         }
 
-        if ($mealObj->update($meal_id, $name, $description, $price, $category_name, $image, $_SESSION['id'], $_SERVER['REMOTE_ADDR'] ?? null)) {
+        if ($mealObj->update($meal_id, $name, $description, $price, $category_id, $image, $_SESSION['id'], $_SERVER['REMOTE_ADDR'] ?? null)) {
             echo json_encode(['success' => true, 'message' => 'Meal updated successfully']);
         } else {
             http_response_code(500);

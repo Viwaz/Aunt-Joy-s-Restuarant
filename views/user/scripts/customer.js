@@ -133,7 +133,8 @@ async function addToCart(mealId) {
             alert('Item added to cart!');
             updateCartCount();
         } else {
-            alert('Error: ' + (data.message || 'Failed to add to cart'));
+            // Display specific error message from API
+            alert(data.message || 'Failed to add to cart');
         }
     } catch (error) {
         console.error('Error adding to cart:', error);

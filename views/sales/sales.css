@@ -102,7 +102,7 @@ header h1 {
 }
 
 .filter-label {
-    font-size: 14px;
+    font-size: 16px;
     color: #666;
     font-weight: 500;
 }
@@ -164,7 +164,7 @@ header h1 {
 }
 
 .col-customer {
-    font-size: 13px;
+    font-size: 18px;
     line-height: 1.4;
 }
 
@@ -189,7 +189,7 @@ header h1 {
 .status-badge {
     padding: 4px 10px;
     border-radius: 4px;
-    font-size: 11px;
+    font-size: 20px;
     font-weight: 600;
     text-transform: uppercase;
     display: inline-block;
@@ -202,13 +202,13 @@ header h1 {
 
 .status-badge.status-en-route {
     background: #d1ecf1;
-    color: #0c5460;
+    color: #096575;
 }
 
 
 .status-badge.status-delivered {
     background: #d1e7dd;
-    color: #0f5132;
+    color: #0a7945;
 }
 
 

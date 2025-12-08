@@ -27,7 +27,7 @@ $username = $result ? $result->username : 'Admin';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    html { font-size:25px; }
+    html { font-size:20px; }
   </style>
     <title>Admin Dashboard - Aunt Joy's</title>
     <link rel="stylesheet" href="styles.css">

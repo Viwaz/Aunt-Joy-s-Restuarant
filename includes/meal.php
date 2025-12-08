@@ -33,26 +33,18 @@ class Meal {
         return $res;
     }
 
-    public function create($name, $description, $price, $category_name, $image = null, $performed_by = null, $ip_address = null) {
-        // Resolve category id
-        $query = "SELECT id FROM categories WHERE category_name = ? LIMIT 1";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('s', $category_name);
-        $stmt->execute();
-        $row = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-        $category = $row['id'] ?? null;
-
+    public function create($name, $description, $price, $category_id, $image = null, $performed_by = null, $ip_address = null) {
+        // Use category_id directly
         $query = "INSERT INTO menu_items (name, description, price_MWK, category, image) VALUES (?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($query);
         if (!$stmt) return false;
         $img = $image ?? 'default_food.png';
-        $stmt->bind_param('ssdis', $name, $description, $price, $category, $img);
+        $stmt->bind_param('ssdis', $name, $description, $price, $category_id, $img);
         $res = $stmt->execute();
         if ($res) {
             $new_id = $this->conn->insert_id;
             $audit = new AuditLog($this->conn);
-            $new_values = ['name' => $name, 'description' => $description, 'price_MWK' => $price, 'category' => $category, 'image' => $img];
+            $new_values = ['name' => $name, 'description' => $description, 'price_MWK' => $price, 'category' => $category_id, 'image' => $img];
             $ip = $ip_address ?? ($_SERVER['REMOTE_ADDR'] ?? null);
             $audit->log('CREATE', 'meal', $new_id, $performed_by, "Meal created: $name", null, $new_values, $ip);
         }

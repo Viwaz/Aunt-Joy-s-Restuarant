@@ -9,9 +9,7 @@ async function loadOrders() {
             return;
         }
 
-        const currentOrders = data.orders.filter(o =>
-            ['pending','en route']
-        );
+        const currentOrders = data.orders.filter(o => ['pending','en route'].includes(o.status));
         const historyOrders = data.orders.filter(o => o.status === 'delivered');
 
         renderOrders('current-orders', currentOrders);

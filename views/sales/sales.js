@@ -120,7 +120,7 @@ async function updateOrderStatus() {
     }
 
     try {
-        const data = await ApiClient.updateOrderStatus(selectedOrderId, newStatus);
+        const data = await ApiClient.updateOrderStatus(parseInt(selectedOrderId, 10), newStatus);
 
         if (data.success) {
             alert('Order status updated successfully');

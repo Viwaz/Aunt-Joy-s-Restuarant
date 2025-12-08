@@ -41,10 +41,10 @@ class ApiClient {
     }
 
     static async updateOrderStatus(orderId, status) {
-        return this.request('orders_api.php?action=update', {
+        return this.request('orders_api.php?action=update_status', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: orderId, status })
+            body: JSON.stringify({ order_id: orderId, status })
         });
     }
 

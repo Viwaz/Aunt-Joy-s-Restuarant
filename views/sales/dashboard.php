@@ -3,7 +3,9 @@ require_once __DIR__.'/../../auth/auth.php';
 
 $auth = new Auth();
 if (!$auth->isLoggedIn() || $_SESSION['role'] !== 'sales') {
-    header("Location: ../../index.php");
+    echo "Access Denied. Redirecting to homepage...";
+    sleep(5);
+    header("Location: ../../auth/login.php");
     exit;
 }
 ?>
@@ -14,7 +16,15 @@ if (!$auth->isLoggedIn() || $_SESSION['role'] !== 'sales') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sales Dashboard - Aunt Joy's Restaurant</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Reuse admin dashboard styling for consistent look -->
+    <link rel="stylesheet" href="../admin/styles.css">
     <link rel="stylesheet" href="sales.css">
+    <style>
+        /* Slightly larger base font for better readability */
+        html { font-size: 18px; }
+        /* Ensure sales-specific components keep their spacing */
+        .sales-container { min-height: 100vh; }
+    </style>
 </head>
 <body>
 <div class="sales-container">
