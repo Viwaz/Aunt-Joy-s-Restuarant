@@ -1,9 +1,11 @@
 <?php
-// require_once '../../../auth/auth.php';
 require_once '../../../includes/Database.php';
-
-// $auth = new Auth();
 session_start();
+// Session and role check
+if (!isset($_SESSION['id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'customer') {
+    header('Location: ../../../auth/login.php');
+    exit;
+}
 $user_id = $_SESSION['id'];
 $db = (new Database())->getConnection();
 

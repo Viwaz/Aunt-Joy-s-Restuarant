@@ -15,6 +15,8 @@ $auth = new Auth();
     <title>Menu - Aunt Joy's Restaurant</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../styles/customer.css">
+    <!-- Notification Popup (in head to ensure proper positioning) -->
+    <div id="notification-popup" class="notification-popup" style="display:none; position: fixed !important; top: 30px !important; right: 30px !important; z-index: 9999 !important;"></div>
 </head>
 <body>
 

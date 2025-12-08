@@ -1,3 +1,70 @@
+/* Notification Popup (Toast) */
+.notification-popup {
+    position: fixed !important;
+    top: 30px !important;
+    right: 30px !important;
+    bottom: auto !important;
+    left: auto !important;
+    z-index: 9999 !important;
+    background: #333;
+    color: #fff;
+    padding: 18px 28px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
+    font-size: 18px;
+    font-weight: 500;
+    opacity: 1;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: auto;
+    max-width: 450px;
+    border-left: 5px solid #666;
+    line-height: 1.5;
+    letter-spacing: 0.3px;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(500px) scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    to {
+        transform: translateX(500px) scale(0.95);
+        opacity: 0;
+    }
+}
+
+.notification-popup.success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    border-left-color: #ffc107;
+    box-shadow: 0 8px 24px rgba(40, 167, 69, 0.3), 0 0 0 1px rgba(255,255,255,0.1);
+}
+
+.notification-popup.error {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border-left-color: #fff;
+    box-shadow: 0 8px 24px rgba(231, 76, 60, 0.3), 0 0 0 1px rgba(255,255,255,0.1);
+}
+
+.notification-popup.info {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    border-left-color: #e8f4f8;
+    box-shadow: 0 8px 24px rgba(52, 152, 219, 0.3), 0 0 0 1px rgba(255,255,255,0.1);
+}
+
+.notification-popup.warning {
+    background: linear-gradient(135deg, #ff9f43 0%, #e67e22 100%);
+    color: white;
+    border-left-color: #fff;
+    box-shadow: 0 8px 24px rgba(255, 159, 67, 0.3), 0 0 0 1px rgba(255,255,255,0.1);
+}
 * {
     margin: 0;
     padding: 0;
@@ -7,6 +74,7 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f5f5f5;
+    position: relative;
 }
 
 .customer-container {

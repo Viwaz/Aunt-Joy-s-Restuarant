@@ -50,7 +50,7 @@ async function loadMeals(categoryId = null) {
         const data = await ApiClient.getMeals(categoryId);
 
         if (!data.success) {
-            alert('Failed to load meals');
+            showNotification('Failed to load meals', 'error');
             return;
         }
 
@@ -66,7 +66,7 @@ async function loadMeals(categoryId = null) {
 
     } catch (error) {
         console.error('Error loading meals:', error);
-        alert('Error loading meals');
+        showNotification('Error loading meals', 'error');
     }
 }
 
@@ -94,7 +94,7 @@ async function searchMeals(event) {
     const keyword = document.getElementById('search-keyword').value.trim();
 
     if (!keyword) {
-        alert('Please enter a search term');
+        showNotification('Please enter a search term', 'warning');
         return;
     }
 
@@ -102,7 +102,7 @@ async function searchMeals(event) {
         const data = await ApiClient.searchMeals(keyword);
 
         if (!data.success) {
-            alert('Search failed');
+            showNotification('Search failed', 'error');
             return;
         }
 
@@ -118,7 +118,7 @@ async function searchMeals(event) {
 
     } catch (error) {
         console.error('Error searching meals:', error);
-        alert('Error searching meals');
+        showNotification('Error searching meals', 'error');
     }
 }
 
@@ -130,15 +130,15 @@ async function addToCart(mealId) {
         const data = await ApiClient.addToCart(mealId, quantity);
 
         if (data.success) {
-            alert('Item added to cart!');
+            showNotification('Item added to cart!', 'success');
             updateCartCount();
         } else {
             // Display specific error message from API
-            alert(data.message || 'Failed to add to cart');
+            showNotification(data.message || 'Failed to add to cart', 'error');
         }
     } catch (error) {
         console.error('Error adding to cart:', error);
-        alert('Error adding to cart');
+        showNotification('Error adding to cart', 'error');
     }
 }
 
@@ -149,6 +149,20 @@ async function updateCartCount() {
     } catch (error) {
         console.error('Error updating cart count:', error);
     }
+}
+
+const popup = document.getElementById('notification-popup');
+function showNotification(message, type = 'info', duration = 3000) {
+    if (!popup) {
+        console.error('Notification popup element not found');
+        return;
+    }
+    popup.textContent = message;
+    popup.className = 'notification-popup ' + type;
+    popup.style.display = 'block';
+    setTimeout(() => {
+        popup.style.display = 'none';
+    }, duration);
 }
 
 // ===== INITIALIZATION =====
