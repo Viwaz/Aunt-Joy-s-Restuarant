@@ -57,13 +57,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $order_id = $db->insert_id;
 
             // insert order items
-            $insItem = $db->prepare("INSERT INTO order_items (order_id, menu_item_id, quantity, price, sub_total) VALUES (?, ?, ?, ?, ?)");
+            $insItem = $db->prepare("INSERT INTO order_items (order_id, menu_item_id, quantity, price) VALUES (?, ?, ?, ?)");
             foreach ($cart_items as $it) {
                 $mid = $it['menu_item_id'];
                 $qty = $it['quantity'];
                 $price = $it['price_MWK'];
-                $sub_t = $it['subtotal'];
-                $insItem->bind_param('iiidd', $order_id, $mid, $qty, $price, $sub_t);
+                $insItem->bind_param('iiid', $order_id, $mid, $qty, $price);
                 $insItem->execute();
             }
 
