@@ -1,6 +1,6 @@
 
 <?php
-require_once '../../../auth/auth.php';
+require_once __DIR__ . '/../../../auth/auth.php';
 
 $auth = new Auth();
 ?>
@@ -14,69 +14,47 @@ $auth = new Auth();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu - Aunt Joy's Restaurant</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../styles/customer.css">
-    <!-- Notification Popup (in head to ensure proper positioning) -->
-    <div id="notification-popup" class="notification-popup" style="display:none; position: fixed !important; top: 30px !important; right: 30px !important; z-index: 9999 !important;"></div>
+    <link rel="stylesheet" href="../styles/storefront.css">
 </head>
 <body>
 
-<div class="customer-container">
-    <!-- Sidebar -->
-    <div class="sidebar">
-    <a href="customer_interface.php" class="logo"> Aunt Joy's</a>
-        <ul>
-            <li><a href="customer_interface.php"> Menu</a></li>
-            <li><a href="cart.php"> Cart
-                    <div class="header-right">
-                        <h1 class="cart-badge" id="cart-count">0</h1>
-                    </div>
-                </a>
+<div id="notification-popup" class="notification-popup" style="display:none;"></div>
 
-            <li><a href="customer_orders.php"> My Orders</a></li>
-        </ul>
-        <div class="logging">
-        <?php if (!isset($_SESSION['id'])): ?>
-            <a href="../../../auth/login.php"> Login </a>
-            <?php else: ?>
-            <a href="../../../auth/logout.php"><i class="fas fa-sign-out-alt"></i>Logout</a>
-            <?php endif ;?>
-        </div>
-    </div>
+<div class="store-page">
+    <?php
+        $page = 'menu';
+        $showSearch = true;
+        include __DIR__ . '/../partials/store_header.php';
+    ?>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <header>
-            <h1>Menu</h1>
-            <div class="header-right"></div>
-        </header>
-
-        <div class="content-area">
-            <!-- Search -->
-            <div class="search-section">
-                <form class="search-form" onsubmit="searchMeals(event)">
-                    <input type="text" id="search-keyword" placeholder="Search for meals...">
-                    <button type="submit">Search</button>
-                </form>
+    <main class="store-main">
+        <section class="store-hero">
+            <div>
+                <h2>Today's Deals</h2>
+                <p>Fresh meals, fast delivery, and great value — shop your favorites.</p>
             </div>
+            <div class="store-hero-cta">Free delivery over MWK 20,000</div>
+        </section>
 
-            <!-- Categories -->
-            <div class="categories-section">
-                <h3>Filter by Category</h3>
-                <div id="category-list"></div>
-            </div>
+        <section class="store-panel">
+            <h3 class="store-panel-title">Shop by category</h3>
+            <div id="category-list"></div>
+        </section>
 
-            <!-- Meals Grid -->
+        <section class="store-panel">
+            <h3 class="store-panel-title">Recommended for you</h3>
             <div id="meals-grid"></div>
-        </div>
+        </section>
+    </main>
 
-        <footer>
-            <p>&copy; 2025 Aunt Joy's Restaurant. All Rights Reserved.</p>
-        </footer>
-    </div>
+    <footer class="store-footer">
+        <p>&copy; 2025 Aunt Joy's Restaurant. All Rights Reserved.</p>
+    </footer>
 </div>
 
 <script src="../api-client.js"></script>
 <script src="../scripts/customer.js"></script>
+<script src="../scripts/storefront.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

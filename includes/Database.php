@@ -1,7 +1,7 @@
 <?php
 class Database {
     private $host = "127.0.0.1";
-    private $port = "3307";
+    private $port = "3309";
     private $db_name = "aunt_joydb";
     private $username = "root";
     private $password;

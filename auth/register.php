@@ -15,8 +15,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         $username = $_POST['username'];
         $email = $_POST["email"];
         $password = $_POST['password'];
+        $delivery_address = $_POST['delivery_address'] ?? null;
+        $phone_num = $_POST['phone_num'] ?? null;
 
-        if($user->create($username, $email, $password)){
+        if($user->create($username, $email, $password, 'customer', null, null, $delivery_address, $phone_num)){
             $success_message = "Registration successful! You can now log in.";
         } else {
             $error_message = "There was an error while registering the user. The email or username might already be in use.";
@@ -40,6 +42,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         <form method="POST">
             <input type="text" name="username" placeholder="Choose a Username" required>
             <input type="email" name="email" placeholder="Enter your Email" required>
+            <input type="text" name="delivery_address" placeholder="Delivery Address (optional)">
+            <input type="text" name="phone_num" placeholder="Phone Number (optional)">
             
             <div class="input-group">
                 <input type="password" name="password" placeholder="Enter a Strong Password" required id="regPasswordInput"> <button type="button" class="toggle-password" id="toggleRegPassword">👁️</button> </div>

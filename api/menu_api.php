@@ -1,43 +1,24 @@
 <?php
 header("Content-Type: application/json");
 require_once '../includes/Database.php';
+require_once '../includes/Menu.php';
 
 $db = (new Database())->getConnection();
+$menuModel = new Menu($db);
 
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? null;
 
 try {
     if ($method === 'GET' && $action === 'categories') {
-        // Get all categories
-        $query = "SELECT * FROM categories ORDER BY category_name";
-        $stmt = $db->prepare($query);
-        $stmt->execute();
-        $categories = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $categories = $menuModel->listCategories();
         echo json_encode(['success' => true, 'categories' => $categories]);
 
     } elseif ($method === 'GET' && $action === 'meals') {
         // Get meals by category or all
         // accept either ?category_id= or ?id= for backward compatibility
         $category_id = $_GET['category_id'] ?? $_GET['id'] ?? null;
-
-        $query = "SELECT m.*, c.category_name as category_name 
-              FROM menu_items m 
-              LEFT JOIN categories c ON m.category = c.id 
-              WHERE m.availability = 'in_stock' AND m.is_active = 1";
-
-        if ($category_id) {
-            $query .= " AND m.category = ?";
-        }
-
-        $query .= " ORDER BY m.name";
-
-        $stmt = $db->prepare($query);
-        if ($category_id) {
-            $stmt->bind_param("i", $category_id);
-        }
-        $stmt->execute();
-        $meals = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $meals = $menuModel->listMeals($category_id ? (int)$category_id : null);
 
         echo json_encode(['success' => true, 'meals' => $meals]);
 
@@ -50,19 +31,7 @@ try {
             echo json_encode(['success' => true, 'meals' => []]);
             exit;
         }
-
-        $query = "SELECT m.*, c.category_name as category_name 
-              FROM menu_items m 
-              LEFT JOIN categories c ON m.category = c.id 
-              WHERE m.availability = 'in_stock' AND m.is_active = 1
-              AND (m.name LIKE ? OR m.description LIKE ?) 
-              ORDER BY m.name";
-
-        $stmt = $db->prepare($query);
-        $keyword = "%$keyword%";
-        $stmt->bind_param("ss", $keyword, $keyword);
-        $stmt->execute();
-        $meals = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $meals = $menuModel->searchMeals($keyword);
 
         echo json_encode(['success' => true, 'meals' => $meals]);
 

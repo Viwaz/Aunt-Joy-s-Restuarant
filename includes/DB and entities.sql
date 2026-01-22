@@ -24,6 +24,8 @@ CREATE TABLE users (
     email VARCHAR(150) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role ENUM('customer', 'admin', 'sales', 'manager') NOT NULL DEFAULT 'customer',
+    delivery_address VARCHAR(150),
+    phone_num VARCHAR(15),
     is_active TINYINT(1) DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

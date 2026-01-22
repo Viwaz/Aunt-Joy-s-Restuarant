@@ -10,19 +10,19 @@ class User {
         $this->conn = $db;
     }
 
-    public function create($username, $email, $password, $role = 'customer', $performed_by = null, $ip_address = null) {
-        $query = "INSERT INTO {$this->table} (username, email, password, role) VALUES (?, ?, ?, ?)";
+    public function create($username, $email, $password, $role = 'customer', $performed_by = null, $ip_address = null, $delivery_address = null, $phone_num = null) {
+        $query = "INSERT INTO {$this->table} (username, email, password, role, delivery_address, phone_num) VALUES (?, ?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($query);
         if (!$stmt) return false;
 
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt->bind_param('ssss', $username, $email, $password_hash, $role);
+        $stmt->bind_param('ssssss', $username, $email, $password_hash, $role, $delivery_address, $phone_num);
         $res = $stmt->execute();
         if ($res) {
             $new_id = $this->conn->insert_id;
             // Log creation
             $audit = new AuditLog($this->conn);
-            $new_values = ['username' => $username, 'email' => $email, 'role' => $role];
+            $new_values = ['username' => $username, 'email' => $email, 'role' => $role, 'delivery_address' => $delivery_address, 'phone_num' => $phone_num];
             $ip = $ip_address ?? ($_SERVER['REMOTE_ADDR'] ?? null);
             $audit->log('CREATE', 'user', $new_id, $performed_by, "User created: $username", null, $new_values, $ip);
         }
